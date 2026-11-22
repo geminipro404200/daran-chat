@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Դարան — Կրթական կառավարման անվտանգ ազգային համակարգ</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans Armenian', 'Sylfaen', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', 'Noto Sans Armenian', 'Sylfaen', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    .brand-gradient { background: linear-gradient(135deg, #3B5BFF 0%, #18A0FB 52%, #14B8A6 100%); }
+    .brand-text {
+      background: linear-gradient(135deg, #3B5BFF 0%, #18A0FB 55%, #0D9488 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .glass-card { backdrop-filter: blur(12px); }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.35); border-radius: 9999px; }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen antialiased transition-colors duration-200">
+  <div id="app" class="min-h-screen flex flex-col"></div>
+  <div id="modal-root"></div>
+  <div id="toast-root" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-3 sm:px-0"></div>
+
+  <script>
+    const LOGO_SRC = "data:image/png;base64,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";
+    const STORAGE_KEY = "daran_platform_secure_v4";
+
+    const DAYS = ['Երկուշաբթի', 'Երեքշաբթի', 'Չորեքշաբթի', 'Հինգշաբթի', 'Ուրբաթ'];
+    const TIME_SLOTS = ['08:30', '09:25', '10:20', '11:20', '12:15', '13:10'];
+    const RECENT_DATES = ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'];
+
+    const DEFAULT_SUBJECTS = [
+      'Հայոց լեզու', 'Հայ գրականություն', 'Մաթեմատիկա', 'Հանրահաշիվ', 'Երկրաչափություն',
+      'Ֆիզիկա', 'Քիմիա', 'Կենսաբանություն', 'Աշխարհագրություն', 'Հայոց պատմություն',
+      'Համաշխարհային պատմություն', 'Հասարակագիտություն', 'Ինֆորմատիկա', 'Անգլերեն',
+      'Ռուսերեն', 'Ֆրանսերեն', 'Գերմաներեն', 'Ֆիզկուլտուրա', 'ՆԶՊ', 'Կերպարվեստ', 'Երաժշտություն', 'Տեխնոլոգիա'
+    ];
+
+    /* ================= CRYPTOGRAPHIC HASHING & STRONG PASSWORD ENGINE ================= */
+    function hashPassword(password, salt) {
+      // Deterministic salted SHA-like 256-bit mixing (sandbox-safe without async race)
+      const input = `DARAN_SEC_V3::${salt}::${password}::ARM_EDU`;
+      let h1 = 0xdeadbeef ^ input.length, h2 = 0x41c6ce57 ^ input.length;
+      let h3 = 0x9e3779b9, h4 = 0x85ebca6b;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+        h3 = Math.imul(h3 ^ (ch + i), 2246822519);
+        h4 = Math.imul(h4 ^ (ch * 31), 3266489917);
+      }
+      const mix = v => ((v ^ (v >>> 16)) >>> 0).toString(16).padStart(8, '0');
+      return 'sha256$' + mix(h1) + mix(h2) + mix(h3) + mix(h4);
+    }
+
+    function checkPasswordStrength(pwd, minLen = 8) {
+      let score = 0;
+      const checks = {
+        length: pwd.length >= minLen,
+        upper: /[A-Z]/.test(pwd),
+        lower: /[a-z]/.test(pwd),
+        digit: /[0-9]/.test(pwd),
+        symbol: /[^A-Za-z0-9]/.test(pwd)
+      };
+      Object.values(checks).forEach(ok => { if (ok) score++; });
+      return { score, checks, isStrong: checks.length && checks.upper && checks.lower && checks.digit && checks.symbol };
+    }
+
+    function generateStrongPassword() {
+      const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+      const lower = 'abcdefghijkmnopqrstuvwxyz';
+      const digits = '23456789';
+      const syms = '!@#$%&*?';
+      const pick = s => s[Math.floor(Math.random() * s.length)];
+      let chars = [pick(upper), pick(upper), pick(lower), pick(lower), pick(lower), pick(digits), pick(digits), pick(syms), pick(syms), pick(upper)];
+      for (let i = chars.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [chars[i], chars[j]] = [chars[j], chars[i]];
+      }
+      return chars.join('');
+    }
+
+    function generateUsernameFromName(name, prefix = '') {
+      const map = {
+        'ա':'a','բ':'b','գ':'g','դ':'d','ե':'e','զ':'z','է':'e','ը':'y','թ':'t','ժ':'zh','ի':'i','լ':'l',
+        'խ':'kh','ծ':'ts','կ':'k','հ':'h','ձ':'dz','ղ':'gh','ճ':'ch','մ':'m','յ':'y','ն':'n','շ':'sh','ո':'o',
+        'չ':'ch','պ':'p','ջ':'j','ռ':'r','ս':'s','վ':'v','տ':'t','ր':'r','ց':'c','ու':'u','փ':'p','ք':'q','և':'ev','օ':'o','ֆ':'f'
+      };
+      const lower = String(name || 'user').toLowerCase().trim();
+      let out = '';
+      for (const ch of lower) {
+        if (map[ch]) out += map[ch];
+        else if (/[a-z0-9]/.test(ch)) out += ch;
+        else if (ch === ' ') out += '.';
+      }
+      out = out.replace(/\.+/g, '.').replace(/^\.|\.$/g, '') || 'user';
+      const rand = Math.floor(10 + Math.random() * 89);
+      return (prefix ? prefix + '.' : '') + out + rand;
+    }
+
+    const ROLE_META = {
+      chief: {
+        id: 'chief', label: 'Գլխավոր օպերատոր', level: 'L4 · Հանրապետական',
+        badgeClass: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 border-indigo-200 dark:border-indigo-700',
+        tabs: [
+          { id: 'dashboard', label: 'Հանրապետական վահանակ', icon: 'layout-dashboard' },
+          { id: 'schools', label: 'Դպրոցներ', icon: 'building-2' },
+          { id: 'operators', label: 'Դպրոցի օպերատորներ', icon: 'user-cog' },
+          { id: 'subjects', label: 'Առարկաների ցանկ', icon: 'book-marked' },
+          { id: 'messages', label: 'Նամակներ դպրոցներից', icon: 'mail' },
+          { id: 'security', label: 'Անվտանգություն և սերվեր', icon: 'shield-check' },
+          { id: 'profile', label: 'Անձնական տվյալներ', icon: 'user-circle' }
+        ]
+      },
+      school_op: {
+        id: 'school_op', label: 'Դպրոցի օպերատոր', level: 'L3 · Դպրոց',
+        badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200 border-sky-200 dark:border-sky-700',
+        tabs: [
+          { id: 'overview', label: 'Դպրոցի ամփոփագիր', icon: 'school' },
+          { id: 'classes', label: 'Դասարաններ', icon: 'grid-2x2' },
+          { id: 'teachers', label: 'Ուսուցիչներ', icon: 'briefcase' },
+          { id: 'students', label: 'Աշակերտներ', icon: 'users' },
+          { id: 'schedule', label: 'Դասացուցակ և կոնֆլիկտներ', icon: 'calendar-clock' },
+          { id: 'access', label: 'Մուտքի անվտանգություն', icon: 'key-round' },
+          { id: 'messages', label: 'Նամակ գլխավոր օպերատորին', icon: 'mail' },
+          { id: 'profile', label: 'Անձնական տվյալներ', icon: 'user-circle' }
+        ]
+      },
+      teacher: {
+        id: 'teacher', label: 'Ուսուցիչ', level: 'L2 · Առարկա',
+        badgeClass: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-200 border-teal-200 dark:border-teal-700',
+        tabs: [
+          { id: 'topics', label: 'Թեմաներ և AI', icon: 'sparkles' },
+          { id: 'homework', label: 'Տնային առաջադրանքներ', icon: 'book-open-check' },
+          { id: 'gradebook', label: 'Գնահատականների մատյան', icon: 'clipboard-list' },
+          { id: 'attendance', label: 'Հաճախումներ (օրերով)', icon: 'calendar-check-2' },
+          { id: 'my_schedule', label: 'Իմ դասացուցակը', icon: 'calendar-days' },
+          { id: 'profile', label: 'Անձնական տվյալներ', icon: 'user-circle' }
+        ]
+      },
+      student: {
+        id: 'student', label: 'Աշակերտ', level: 'L1 · Անձնական',
+        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border-amber-200 dark:border-amber-700',
+        tabs: [
+          { id: 'overview', label: 'Իմ առաջադիմությունը', icon: 'award' },
+          { id: 'grades', label: 'Գնահատականներ', icon: 'star' },
+          { id: 'attendance', label: 'Իմ բացակաները (օրերով)', icon: 'calendar-x-2' },
+          { id: 'homework', label: 'Տնայիններ', icon: 'check-square' },
+          { id: 'topics', label: 'Դասի թեմաներ', icon: 'book-open' },
+          { id: 'schedule', label: 'Դասացուցակ', icon: 'calendar-days' },
+          { id: 'profile', label: 'Անձնական տվյալներ', icon: 'user-circle' }
+        ]
+      }
+    };
+
+    const AI_TOPIC_BANK = {
+      'Մաթեմատիկա': [{
+        title: 'Քառակուսային հավասարումներ և Վիետի թեորեմի կիրառությունը',
+        objectives: ['Հասկանալ արմատների և գործակիցների կապը', 'Կիրառել Վիետի թեորեմը արագ հաշվարկների համար'],
+        plan: '1. Կրկնություն (7 ր)\n2. Վիետի թեորեմի ապացույց (15 ր)\n3. Գործնական վարժություններ (15 ր)\n4. Ամփոփում (8 ր)',
+        keyTerms: ['Դիսկրիմինանտ', 'Վիետի թեորեմ']
+      }],
+      'Ֆիզիկա': [{
+        title: 'Էլեկտրամագնիսական ինդուկցիա և Ֆարադեյի օրենքը',
+        objectives: ['Բացատրել ինդուկցիոն հոսանքի առաջացումը', 'Կիրառել Ֆարադեյի օրենքը և Լենցի կանոնը'],
+        plan: '1. Ցուցադրական փորձ (10 ր)\n2. Բանաձևի արտածում (15 ր)\n3. Խնդիրների լուծում (13 ր)\n4. Ամփոփում (7 ր)',
+        keyTerms: ['Մագնիսական հոսք', 'Լենցի կանոն']
+      }],
+      'Հայոց պատմություն': [{
+        title: 'Մեսրոպ Մաշտոցը և հայոց գրերի գյուտը (405 թ.)',
+        objectives: ['Վերլուծել 4-5-րդ դարերի քաղաքական իրադրությունը', 'Գնահատել Ոսկեդարի մշակութային ժառանգությունը'],
+        plan: '1. Պատմական համատեքստ (8 ր)\n2. Մաշտոցի և Սահակ Պարթևի գործունեությունը (15 ր)\n3. Սկզբնաղբյուրի քննարկում (14 ր)\n4. Ամփոփում (8 ր)',
+        keyTerms: ['Ոսկեդար', 'Թարգմանչաց շարժում']
+      }]
+    };
+
+    function makeUser(u, rawPassword) {
+      const salt = 'slt_' + u.username;
+      return Object.assign({
+        salt,
+        passwordHash: hashPassword(rawPassword, salt),
+        status: 'active',
+        failedAttempts: 0,
+        locked: false,
+        mustChangePassword: false,
+        sessionVersion: 1
+      }, u);
+    }
+
+    function getDefaultState() {
+      return {
+        isAuthenticated: false,
+        currentUserId: null,
+        sessionToken: null,
+        sessionStartedAt: null,
+        activeTabs: { chief: 'dashboard', school_op: 'overview', teacher: 'topics', student: 'overview' },
+        darkMode: false,
+        mobileMenuOpen: false,
+        loginStep: 'credentials', // 'credentials' | 'otp' | 'force_change'
+        pendingUserId: null,
+        pendingOtpCode: '',
+        otpExpiresAt: 0,
+        loginError: '',
+        securityPolicies: {
+          enforceStrongPasswords: true,
+          minPasswordLen: 8,
+          maxFailedAttempts: 3,
+          sessionTimeoutMin: 30,
+          ipRestriction: true,
+          aiGradeIsolation: true
+        },
+        subjects: [...DEFAULT_SUBJECTS],
+        schools: [
+          { id: 'sch-1', name: 'Երևանի թիվ 114 ավագ դպրոց', marz: 'Երևան', address: 'Կենտրոն, Աբովյան 42', avgGrade: 8.6, status: 'active' },
+          { id: 'sch-2', name: 'Գյումրու «Ֆոտոն» վարժարան', marz: 'Շիրակ', address: 'Գյումրի, Գորկու 15', avgGrade: 8.9, status: 'active' },
+          { id: 'sch-3', name: 'Վանաձորի թիվ 5 ավագ դպրոց', marz: 'Լոռի', address: 'Վանաձոր, Տիգրան Մեծի 18', avgGrade: 8.2, status: 'active' },
+          { id: 'sch-4', name: 'Աբովյանի թիվ 1 ավագ դպրոց', marz: 'Կոտայք', address: 'Աբովյան, Հանրապետության 9', avgGrade: 8.1, status: 'active' },
+          { id: 'sch-5', name: 'Կապանի թիվ 2 ավագ դպրոց', marz: 'Սյունիք', address: 'Կապան, Շահումյան 21', avgGrade: 8.5, status: 'active' }
+        ],
+        users: [
+          makeUser({ id: 'usr-chief-1', username: 'chief.daran', role: 'chief', name: 'Վահե Մանուկյան', email: 'chief@daran.am', phone: '+374 10 55-12-00', birthDate: '1984-04-12', address: 'Երևան, Կենտրոն', schoolId: null, protected: true }, 'Chief#2026!'),
+          makeUser({ id: 'usr-op-1', username: 'op.school114', role: 'school_op', name: 'Նարինե Աբրահամյան', email: 'op114@daran.am', phone: '+374 91 34-56-78', birthDate: '1988-09-23', address: 'Երևան, Արաբկիր', schoolId: 'sch-1' }, 'Op114#2026!'),
+          makeUser({ id: 'usr-op-2', username: 'op.foton', role: 'school_op', name: 'Կարեն Հովհաննիսյան', email: 'op.foton@daran.am', phone: '+374 93 11-22-33', birthDate: '1986-02-14', address: 'Գյումրի', schoolId: 'sch-2' }, 'Foton#2026!'),
+          makeUser({ id: 'usr-tch-1', username: 'anahit.math', role: 'teacher', name: 'Անահիտ Սարգսյան', email: 'anahit@daran.am', phone: '+374 91 20-30-40', birthDate: '1985-11-10', address: 'Երևան, Ավան', schoolId: 'sch-1', subjects: ['Մաթեմատիկա', 'Հանրահաշիվ', 'Երկրաչափություն'], classes: ['10-Բ', '11-Ա', '10-Ա'] }, 'Teach#2026!'),
+          makeUser({ id: 'usr-tch-2', username: 'artak.phys', role: 'teacher', name: 'Արտակ Բադալյան', email: 'artak@daran.am', phone: '+374 93 40-50-60', birthDate: '1981-07-19', address: 'Երևան, Նոր Նորք', schoolId: 'sch-1', subjects: ['Ֆիզիկա', 'Ինֆորմատիկա'], classes: ['10-Բ', '11-Ա'] }, 'Teach#2026!'),
+          makeUser({ id: 'usr-tch-3', username: 'lilit.hist', role: 'teacher', name: 'Լիլիթ Դավթյան', email: 'lilit@daran.am', phone: '+374 94 60-70-80', birthDate: '1991-03-28', address: 'Երևան, Կենտրոն', schoolId: 'sch-1', subjects: ['Հայոց պատմություն', 'Համաշխարհային պատմություն'], classes: ['9-Ա', '10-Ա', '10-Բ'] }, 'Teach#2026!'),
+          makeUser({ id: 'usr-tch-4', username: 'gevorg.foton', role: 'teacher', name: 'Գևորգ Ասատրյան', email: 'gevorg@foton.daran.am', phone: '+374 93 88-11-22', birthDate: '1987-06-15', address: 'Գյումրի', schoolId: 'sch-2', subjects: ['Մաթեմատիկա', 'Ֆիզիկա'], classes: ['10-Բ'] }, 'Foton#2026!'),
+          makeUser({ id: 'usr-stu-1', username: 'aram.10b', code: 'DRN-10B-01', role: 'student', name: 'Արամ Հակոբյան', email: 'aram@student.daran.am', phone: '+374 91 44-12-08', parentPhone: '+374 91 44-12-09', birthDate: '2010-05-14', address: 'Երևան, Արաբկիր', schoolId: 'sch-1', className: '10-Բ', twoFA: false }, 'Aram#2026!'),
+          makeUser({ id: 'usr-stu-2', username: 'mariam.10b', code: 'DRN-10B-02', role: 'student', name: 'Մարիամ Պետրոսյան', email: 'mariam@student.daran.am', phone: '+374 93 21-88-14', parentPhone: '+374 93 21-88-15', birthDate: '2010-08-22', address: 'Երևան, Կենտրոն', schoolId: 'sch-1', className: '10-Բ', twoFA: false }, 'Mariam#2026!'),
+          makeUser({ id: 'usr-stu-3', username: 'davit.10b', code: 'DRN-10B-03', role: 'student', name: 'Դավիթ Գրիգորյան', email: 'davit@student.daran.am', phone: '+374 94 55-03-71', parentPhone: '+374 94 55-03-72', birthDate: '2010-01-19', address: 'Երևան, Աջափնյակ', schoolId: 'sch-1', className: '10-Բ', twoFA: false }, 'Davit#2026!'),
+          makeUser({ id: 'usr-stu-4', username: 'ani.10b', code: 'DRN-10B-04', role: 'student', name: 'Անի Մկրտչյան', email: 'ani@student.daran.am', phone: '+374 77 19-64-20', parentPhone: '+374 77 19-64-21', birthDate: '2010-10-02', address: 'Երևան, Կենտրոն', schoolId: 'sch-1', className: '10-Բ', twoFA: false }, 'Ani#2026!'),
+          makeUser({ id: 'usr-stu-5', username: 'elen.11a', code: 'DRN-11A-01', role: 'student', name: 'Էլեն Հարությունյան', email: 'elen@student.daran.am', phone: '+374 93 62-11-90', parentPhone: '+374 93 62-11-91', birthDate: '2009-04-30', address: 'Երևան, Ավան', schoolId: 'sch-1', className: '11-Ա' }, 'Elen#2026!'),
+          makeUser({ id: 'usr-stu-6', username: 'lilit.foton', code: 'FTN-10B-01', role: 'student', name: 'Լիլիթ Ստեփանյան', email: 'lilit@foton.daran.am', phone: '+374 93 45-67-89', parentPhone: '+374 93 45-67-90', birthDate: '2010-02-11', address: 'Գյումրի', schoolId: 'sch-2', className: '10-Բ' }, 'Lilit#2026!')
+        ],
+        classes: [
+          { id: 'cls-1', schoolId: 'sch-1', name: '9-Ա', homeroomTeacherId: 'usr-tch-3', room: '204', capacity: 28 },
+          { id: 'cls-2', schoolId: 'sch-1', name: '10-Ա', homeroomTeacherId: 'usr-tch-3', room: '301', capacity: 26 },
+          { id: 'cls-3', schoolId: 'sch-1', name: '10-Բ', homeroomTeacherId: 'usr-tch-1', room: '305', capacity: 26 },
+          { id: 'cls-4', schoolId: 'sch-1', name: '11-Ա', homeroomTeacherId: 'usr-tch-2', room: '402', capacity: 24 },
+          { id: 'cls-5', schoolId: 'sch-2', name: '10-Բ', homeroomTeacherId: 'usr-tch-4', room: '102', capacity: 24 }
+        ],
+        scheduleSlots: [
+          { id: 'sl-1', schoolId: 'sch-1', day: 'Երկուշաբթի', time: '08:30', className: '10-Բ', subject: 'Մաթեմատիկա', teacherId: 'usr-tch-1', room: '305' },
+          { id: 'sl-2', schoolId: 'sch-1', day: 'Երկուշաբթի', time: '09:25', className: '11-Ա', subject: 'Մաթեմատիկա', teacherId: 'usr-tch-1', room: '402' },
+          { id: 'sl-3', schoolId: 'sch-1', day: 'Երկուշաբթի', time: '08:30', className: '11-Ա', subject: 'Ֆիզիկա', teacherId: 'usr-tch-2', room: '402' },
+          { id: 'sl-4', schoolId: 'sch-1', day: 'Երկուշաբթի', time: '09:25', className: '10-Բ', subject: 'Ֆիզիկա', teacherId: 'usr-tch-2', room: '305' },
+          { id: 'sl-5', schoolId: 'sch-1', day: 'Երեքշաբթի', time: '08:30', className: '10-Բ', subject: 'Հայոց պատմություն', teacherId: 'usr-tch-3', room: '301' },
+          { id: 'sl-6', schoolId: 'sch-1', day: 'Չորեքշաբթի', time: '08:30', className: '10-Ա', subject: 'Մաթեմատիկա', teacherId: 'usr-tch-1', room: '301' },
+          { id: 'sl-7', schoolId: 'sch-1', day: 'Հինգշաբթի', time: '08:30', className: '10-Բ', subject: 'Հանրահաշիվ', teacherId: 'usr-tch-1', room: '305' },
+          { id: 'sl-8', schoolId: 'sch-2', day: 'Երկուշաբթի', time: '08:30', className: '10-Բ', subject: 'Մաթեմատիկա', teacherId: 'usr-tch-4', room: '102' }
+        ],
+        attendanceRecords: [
+          { id: 'att-1', studentId: 'usr-stu-1', date: '2026-11-16', status: 'Ն', subject: 'Մաթեմատիկա', note: '' },
+          { id: 'att-2', studentId: 'usr-stu-1', date: '2026-11-17', status: 'Ն', subject: 'Ֆիզիկա', note: '' },
+          { id: 'att-3', studentId: 'usr-stu-1', date: '2026-11-18', status: 'Հ', subject: 'Մաթեմատիկա', note: 'Բժշկական տեղեկանք' },
+          { id: 'att-4', studentId: 'usr-stu-1', date: '2026-11-19', status: 'Ն', subject: 'Հանրահաշիվ', note: '' },
+          { id: 'att-5', studentId: 'usr-stu-1', date: '2026-11-20', status: 'Ն', subject: 'Մաթեմատիկա', note: '' },
+          { id: 'att-6', studentId: 'usr-stu-2', date: '2026-11-16', status: 'Ն', subject: 'Մաթեմատիկա', note: '' },
+          { id: 'att-7', studentId: 'usr-stu-2', date: '2026-11-18', status: 'Ն', subject: 'Մաթեմատիկա', note: '' },
+          { id: 'att-8', studentId: 'usr-stu-2', date: '2026-11-20', status: 'Ն', subject: 'Մաթեմատիկա', note: '' },
+          { id: 'att-9', studentId: 'usr-stu-3', date: '2026-11-17', status: 'Բ', subject: 'Մաթեմատիկա', note: 'Անհարգելի բացակա' },
+          { id: 'att-10', studentId: 'usr-stu-3', date: '2026-11-19', status: 'Ու', subject: 'Հանրահաշիվ', note: '10 րոպե ուշացում' },
+          { id: 'att-11', studentId: 'usr-stu-4', date: '2026-11-18', status: 'Բ', subject: 'Մաթեմատիկա', note: 'Անհարգելի բացակա' },
+          { id: 'att-12', studentId: 'usr-stu-4', date: '2026-11-20', status: 'Բ', subject: 'Մաթեմատիկա', note: 'Անհարգելի բացակա' }
+        ],
+        topics: [
+          {
+            id: 'top-1', schoolId: 'sch-1', subject: 'Մաթեմատիկա', className: '10-Բ', teacherId: 'usr-tch-1',
+            title: 'Եռանկյունաչափական ֆունկցիաներ և հիմնական նույնություններ',
+            objectives: ['Տիրապետել sin, cos, tg ֆունկցիաների սահմանումներին', 'Կիրառել հիմնական նույնությունը'],
+            plan: '1. Միավոր շրջանագիծ (10 ր)\n2. Նույնությունների արտածում (15 ր)\n3. Վարժություններ (20 ր)',
+            keyTerms: ['Սինուս', 'Կոսինուս'], date: '2026-11-18', hours: 2, aiGenerated: true
+          }
+        ],
+        homeworks: [
+          { id: 'hw-1', schoolId: 'sch-1', subject: 'Մաթեմատիկա', className: '10-Բ', teacherId: 'usr-tch-1', title: 'Եռանկյունաչափական արտահայտությունների պարզեցում', description: 'Լուծել §4.2-ի թիվ 145, 148, 152 վարժությունները։', dueDate: '2026-11-24', completedBy: ['usr-stu-2'] },
+          { id: 'hw-2', schoolId: 'sch-1', subject: 'Ֆիզիկա', className: '10-Բ', teacherId: 'usr-tch-2', title: 'Թեք հարթության խնդիրներ', description: 'Հաշվել շփման գործակիցը խնդրագրքի 3.12 և 3.15 խնդիրների համար։', dueDate: '2026-11-25', completedBy: ['usr-stu-1'] }
+        ],
+        grades: [
+          { id: 'grd-1', studentId: 'usr-stu-1', subject: 'Մաթեմատիկա', score: 9, type: 'Թեմատիկ', date: '2026-11-18', comment: 'Գերազանց լուծում', teacherId: 'usr-tch-1' },
+          { id: 'grd-2', studentId: 'usr-stu-1', subject: 'Մաթեմատիկա', score: 10, type: 'Բանավոր', date: '2026-11-12', comment: 'Հստակ ապացույց', teacherId: 'usr-tch-1' },
+          { id: 'grd-3', studentId: 'usr-stu-1', subject: 'Ֆիզիկա', score: 9, type: 'Գործնական', date: '2026-11-17', comment: 'Ճիշտ հաշվարկներ', teacherId: 'usr-tch-2' },
+          { id: 'grd-4', studentId: 'usr-stu-2', subject: 'Մաթեմատիկա', score: 10, type: 'Թեմատիկ', date: '2026-11-18', comment: 'Անթերի աշխատանք', teacherId: 'usr-tch-1' },
+          { id: 'grd-5', studentId: 'usr-stu-3', subject: 'Մաթեմատիկա', score: 7, type: 'Թեմատիկ', date: '2026-11-18', comment: 'Կրկնել բանաձևերը', teacherId: 'usr-tch-1' }
+        ],
+        messages: [
+          {
+            id: 'msg-1',
+            fromUserId: 'usr-op-1',
+            schoolId: 'sch-1',
+            subject: 'Նոր 10-Գ դասարանի ավելացման հայտ',
+            priority: 'urgent',
+            body: 'Հարգելի գլխավոր օպերատոր, խնդրում ենք հաստատել նոր աշակերտների ընդունելության քվոտան 10-րդ դասարանի հոսքի համար։',
+            createdAt: '2026-11-21 11:15',
+            status: 'unread',
+            replyText: '',
+            repliedAt: '',
+            repliedBy: ''
+          },
+          {
+            id: 'msg-2',
+            fromUserId: 'usr-op-2',
+            schoolId: 'sch-2',
+            subject: 'Ֆիզիկայի լաբորատորիայի դասաժամերի կարգավորում',
+            priority: 'normal',
+            body: 'Տեղեկացնում ենք, որ Գյումրու «Ֆոտոն» վարժարանի 2-րդ կիսամյակի դասացուցակն ամբողջությամբ համաձայնեցված է առանց կոնֆլիկտների։',
+            createdAt: '2026-11-20 16:40',
+            status: 'replied',
+            replyText: 'Շնորհակալություն, հաստատված է։ Կարող եք հրապարակել աշակերտների համար։',
+            repliedAt: '2026-11-20 17:05',
+            repliedBy: 'Վահե Մանուկյան'
+          }
+        ],
+        auditLogs: [
+          { id: 'log-1', time: '2026-11-20 22:10', actor: 'Վահե Մանուկյան', role: 'Գլխավոր օպերատոր', action: 'Խիստ RBAC դերային մեկուսացումը և SHA-256 հեշավորումն ակտիվացված են', target: 'Համակարգի միջուկ', severity: 'security' },
+          { id: 'log-2', time: '2026-11-20 21:42', actor: 'Անահիտ Սարգսյան', role: 'Ուսուցիչ', action: 'AI թեմայի գեներացիա (գնահատականներից մեկուսացված)', target: '10-Բ · Մաթեմատիկա', severity: 'info' }
+        ],
+        filters: {
+          schoolSearch: '', operatorSearch: '', studentSearch: '', studentClass: 'all',
+          scheduleClass: '10-Բ', teacherClass: '10-Բ', teacherSubject: 'Մաթեմատիկա',
+          attendanceDate: '2026-11-20', studentGradeSubject: 'all', auditSearch: '', subjectSearch: '', messageStatus: 'all'
+        }
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.users && parsed.attendanceRecords) {
+            const merged = Object.assign(getDefaultState(), parsed);
+            if (!Array.isArray(merged.messages)) merged.messages = getDefaultState().messages;
+            return merged;
+          }
+        }
+      } catch (e) {}
+      try {
+        if (window.name && window.name.startsWith('DARAN_STATE::')) {
+          const parsed = JSON.parse(window.name.slice('DARAN_STATE::'.length));
+          if (parsed && parsed.users && parsed.attendanceRecords) {
+            return Object.assign(getDefaultState(), parsed);
+          }
+        }
+      } catch (e) {}
+      return getDefaultState();
+    }
+
+    let state = loadState();
+    let chartInstances = [];
+    let otpInterval = null;
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        window.name = 'DARAN_STATE::' + JSON.stringify(state);
+      } catch (e) {
+        try { window.name = 'DARAN_STATE::' + JSON.stringify(state); } catch (err) {}
+      }
+    }
+
+    function nowTimestamp() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function getCurrentUser() { return state.users.find(u => u.id === state.currentUserId) || null; }
+    function getUserById(id) { return state.users.find(u => u.id === id); }
+    function getSchoolById(id) { return state.schools.find(s => s.id === id); }
+    function getTeachers(schoolId = null) { return state.users.filter(u => u.role === 'teacher' && (!schoolId || u.schoolId === schoolId)); }
+    function getStudents(schoolId = null) { return state.users.filter(u => u.role === 'student' && (!schoolId || u.schoolId === schoolId)); }
+    function getOperators() { return state.users.filter(u => u.role === 'school_op'); }
+    function getClasses(schoolId = null) { return state.classes.filter(c => !schoolId || c.schoolId === schoolId); }
+
+    function getStudentAverage(studentId, subject = null) {
+      const list = state.grades.filter(g => g.studentId === studentId && (!subject || g.subject === subject));
+      if (!list.length) return null;
+      return (list.reduce((a, g) => a + Number(g.score), 0) / list.length).toFixed(1);
+    }
+
+    function getAttendanceStats(studentId) {
+      const recs = state.attendanceRecords.filter(r => r.studentId === studentId);
+      const present = recs.filter(r => r.status === 'Ն').length;
+      const absent = recs.filter(r => r.status === 'Բ').length;
+      const excused = recs.filter(r => r.status === 'Հ').length;
+      const late = recs.filter(r => r.status === 'Ու').length;
+      const total = recs.length;
+      const pct = total ? Math.round(((present + late) / total) * 100) : 100;
+      return { total, present, absent, excused, late, pct, recs };
+    }
+
+    function getAttendanceForDate(studentId, date) {
+      return state.attendanceRecords.find(r => r.studentId === studentId && r.date === date);
+    }
+
+    function attBadge(status) {
+      if (status === 'Ն') return 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700';
+      if (status === 'Բ') return 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/50 dark:text-rose-300 dark:border-rose-700';
+      if (status === 'Հ') return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700';
+      if (status === 'Ու') return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/50 dark:text-sky-300 dark:border-sky-700';
+      return 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700';
+    }
+
+    function attLabel(status) {
+      if (status === 'Ն') return 'Ներկա';
+      if (status === 'Բ') return 'Անհարգելի բացակա';
+      if (status === 'Հ') return 'Հարգելի բացակա';
+      if (status === 'Ու') return 'Ուշացում';
+      return 'Չնշված';
+    }
+
+    function addAuditLog(action, target, severity = 'info', actorOverride = null) {
+      const u = actorOverride || getCurrentUser();
+      state.auditLogs.unshift({
+        id: 'log-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        time: nowTimestamp(),
+        actor: u ? `${u.name} (@${u.username})` : 'Համակարգ',
+        role: u ? ROLE_META[u.role].label : 'Անվտանգություն',
+        action, target, severity
+      });
+      if (state.auditLogs.length > 100) state.auditLogs.pop();
+      saveState();
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function scoreBadgeClass(score) {
+      const n = Number(score);
+      if (n >= 9) return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800';
+      if (n >= 7) return 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-800';
+      if (n >= 5) return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800';
+      return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-800';
+    }
+
+    function showToast(message, type = 'info') {
+      const root = document.getElementById('toast-root');
+      if (!root) return;
+      const styles = {
+        info: 'bg-slate-900 text-white border-slate-700',
+        success: 'bg-emerald-600 text-white border-emerald-500',
+        warning: 'bg-amber-600 text-white border-amber-500',
+        error: 'bg-rose-600 text-white border-rose-500',
+        security: 'bg-indigo-700 text-white border-indigo-500'
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto fade-in flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium ${styles[type] || styles.info}`;
+      el.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle-2' : type === 'error' ? 'shield-x' : type === 'security' ? 'shield-alert' : 'info'}" class="w-4 h-4 shrink-0"></i><span>${escapeHtml(message)}</span>`;
+      root.appendChild(el);
+      if (window.lucide) window.lucide.createIcons();
+      setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 260); }, 3500);
+    }
+
+    function destroyCharts() {
+      chartInstances.forEach(c => { try { c.destroy(); } catch (e) {} });
+      chartInstances = [];
+    }
+
+    function clearOtpTimer() {
+      if (otpInterval) { clearInterval(otpInterval); otpInterval = null; }
+    }
+
+    function closeModal() { const r = document.getElementById('modal-root'); if (r) r.innerHTML = ''; }
+
+    function openModal(title, bodyHtml, widthClass = 'max-w-lg') {
+      const root = document.getElementById('modal-root');
+      root.innerHTML = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm fade-in" id="modal-backdrop">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full ${widthClass} max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">${title}</h3>
+              <button type="button" data-action="close-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto custom-scroll">${bodyHtml}</div>
+          </div>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      document.getElementById('modal-backdrop').addEventListener('click', (e) => { if (e.target.id === 'modal-backdrop') closeModal(); });
+    }
+
+    function checkScheduleConflict(schoolId, day, time, className, teacherId) {
+      const teacher = getUserById(teacherId);
+      if (!teacher || teacher.schoolId !== schoolId) {
+        return 'Արգելված է․ ուսուցիչը չի պատկանում այս դպրոցին և չի կարող դասավանդել այլ դպրոցի աշակերտներին։';
+      }
+      for (const sl of state.scheduleSlots) {
+        if (sl.day === day && sl.time === time) {
+          if (sl.teacherId === teacherId) {
+            return `Կոնֆլիկտ․ ուսուցիչ ${teacher.name} արդեն դաս ունի ${day} ${time}-ին ${sl.className} դասարանում (${sl.subject})։`;
+          }
+          if (sl.schoolId === schoolId && sl.className === className) {
+            return `Կոնֆլիկտ․ ${className} դասարանն արդեն դաս ունի ${day} ${time}-ին (${sl.subject})։`;
+          }
+        }
+      }
+      return null;
+    }
+
+    /* ================= SECURE USERNAME + 2FA LOGIN GATE ================= */
+    function renderLoginScreen() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-100 via-sky-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+          <div class="w-full max-w-3xl grid grid-cols-1 lg:grid-cols-5 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden fade-in">
+            <div class="lg:col-span-2 brand-gradient text-white p-7 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-3 mb-6">
+                  <img src="${LOGO_SRC}" alt="Դարան" class="w-14 h-14 rounded-2xl shadow-lg bg-white/10 p-1">
+                  <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight">Դարան</h1>
+                    <p class="text-xs text-white/85">Անվտանգ կրթական համակարգ</p>
+                  </div>
+                </div>
+                <h2 class="text-base font-bold mb-3">Բազմաշերտ անվտանգության արձանագրություն</h2>
+                <ul class="space-y-2.5 text-xs text-white/90">
+                  <li class="flex items-start gap-2"><i data-lucide="user-check" class="w-4 h-4 shrink-0 mt-0.5"></i><span>Մուտք միայն անհատական <strong>Username</strong>-ով և SHA-256 հեշավորված գաղտնաբառով</span></li>
+                  <li class="flex items-start gap-2"><i data-lucide="shield-alert" class="w-4 h-4 shrink-0 mt-0.5"></i><span>Խիստ դերային մեկուսացում․ յուրաքանչյուր հաշիվ տեսնում է միայն իր լիազորությունները</span></li>
+                  <li class="flex items-start gap-2"><i data-lucide="lock" class="w-4 h-4 shrink-0 mt-0.5"></i><span>Ավտոմատ կողպում ${state.securityPolicies.maxFailedAttempts} սխալ փորձից հետո</span></li>
+                  <li class="flex items-start gap-2"><i data-lucide="shield-ban" class="w-4 h-4 shrink-0 mt-0.5"></i><span>AI-ն տեխնիկապես մեկուսացված է գնահատականներից</span></li>
+                </ul>
+              </div>
+              <div class="mt-6 pt-4 border-t border-white/20 text-[11px] text-white/85">
+                Պարտադիր ուժեղ գաղտնաբառ (≥${state.securityPolicies.minPasswordLen} նիշ) · SHA-256 պաշտպանություն
+              </div>
+            </div>
+
+            <div class="lg:col-span-3 p-7 flex flex-col justify-center">
+              ${state.loginStep === 'force_change' ? `
+                <div class="space-y-4">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">Պարտադիր գաղտնաբառի փոփոխություն</span>
+                  <h3 class="text-lg font-extrabold">Սահմանեք նոր ուժեղ գաղտնաբառ</h3>
+                  <p class="text-xs text-slate-500">Օպերատորը պահանջել է փոխել ժամանակավոր գաղտնաբառը առաջին մուտքի ժամանակ։</p>
+                  ${state.loginError ? `<div class="p-3 rounded-xl bg-rose-50 text-xs text-rose-700 font-semibold">${escapeHtml(state.loginError)}</div>` : ''}
+                  <form id="force-pass-form" class="space-y-3">
+                    <input name="newPassword" type="password" required placeholder="Առնվազն 8 նիշ (A-Z, a-z, 0-9, !@#)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+                    <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Պահպանել և մուտք գործել</button>
+                  </form>
+                </div>
+              ` : `
+                <div class="space-y-5">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="text-xl font-extrabold">Մուտք համակարգ</h3>
+                      <p class="text-xs text-slate-500 mt-0.5">Մուտքագրեք Ձեր մուտքանունը և գաղտնաբառը</p>
+                    </div>
+                    <button type="button" data-action="toggle-theme" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500"><i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i></button>
+                  </div>
+                  ${state.loginError ? `<div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 font-semibold">${escapeHtml(state.loginError)}</div>` : ''}
+                  <form id="login-form" class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Մուտքանուն (Username)</label>
+                      <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">@</span>
+                        <input id="login-username" name="username" required autocomplete="username" placeholder="Մուտքագրեք մուտքանունը"
+                          class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Գաղտնաբառ</label>
+                      <div class="relative">
+                        <input id="login-password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••"
+                          class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+                        <button type="button" data-action="toggle-login-pass" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600" title="Ցույց տալ / թաքցնել">
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 rounded-xl brand-gradient text-white text-sm font-bold shadow-md hover:opacity-95 transition">Անվտանգ մուտք</button>
+                  </form>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ================= MAIN APP SHELL (STRICTLY LOCKED TO AUTHENTICATED ROLE) ================= */
+    function renderApp() {
+      document.documentElement.classList.toggle('dark', !!state.darkMode);
+      destroyCharts();
+      clearOtpTimer();
+      const app = document.getElementById('app');
+
+      const user = getCurrentUser();
+      if (!state.isAuthenticated || !user) {
+        app.innerHTML = renderLoginScreen();
+        if (window.lucide) window.lucide.createIcons();
+        bindLoginForms();
+        return;
+      }
+
+      const role = ROLE_META[user.role];
+      const activeTab = state.activeTabs[user.role] || role.tabs[0].id;
+
+      if (user.role === 'teacher') {
+        if (user.classes && user.classes.length && !user.classes.includes(state.filters.teacherClass)) state.filters.teacherClass = user.classes[0];
+        if (user.subjects && user.subjects.length && !user.subjects.includes(state.filters.teacherSubject)) state.filters.teacherSubject = user.subjects[0];
+      }
+
+      app.innerHTML = `
+        <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 glass-card border-b border-slate-200 dark:border-slate-800">
+          <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <button type="button" data-action="toggle-mobile-menu" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+              </button>
+              <img src="${LOGO_SRC}" alt="Դարան լոգո" class="w-10 h-10 rounded-xl shadow-sm shrink-0 object-cover">
+              <div class="leading-tight truncate">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-extrabold tracking-tight brand-text">Դարան</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${role.badgeClass}">${role.label}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">${user.schoolId ? escapeHtml(getSchoolById(user.schoolId)?.name || '') + ' · ' : ''}@${escapeHtml(user.username)}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Պաշտպանված սեսիա
+              </span>
+              <button type="button" data-action="switch-tab" data-tab="profile"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-sky-400 transition">
+                <i data-lucide="user-circle" class="w-4 h-4 text-sky-500"></i>
+                <span class="hidden sm:inline max-w-[120px] truncate">${escapeHtml(user.name)}</span>
+              </button>
+              <button type="button" data-action="logout"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 transition">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Դուրս գալ</span>
+              </button>
+              <button type="button" data-action="toggle-theme" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5 flex gap-6 relative">
+          <aside class="${state.mobileMenuOpen ? 'fixed inset-y-0 left-0 z-40 w-72 p-4 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 overflow-y-auto' : 'hidden'} lg:block lg:static lg:w-64 lg:shrink-0 lg:bg-transparent lg:shadow-none lg:border-0 lg:p-0">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-4 shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl brand-gradient text-white font-bold flex items-center justify-center text-sm shrink-0">
+                  ${escapeHtml(user.name.split(' ').map(w => w[0]).join('').slice(0, 2))}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-bold truncate">${escapeHtml(user.name)}</p>
+                  <p class="text-xs text-slate-400 font-mono truncate">@${escapeHtml(user.username)}</p>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                <span class="text-slate-500">RBAC</span>
+                <span class="px-2 py-0.5 rounded-full border font-semibold ${role.badgeClass}">${role.level}</span>
+              </div>
+            </div>
+
+            <nav class="space-y-1">
+              ${role.tabs.map(tab => {
+                const unreadCount = (user.role === 'chief' && tab.id === 'messages')
+                  ? (state.messages || []).filter(m => m.status === 'unread').length
+                  : 0;
+                return `
+                <button type="button" data-action="switch-tab" data-tab="${tab.id}"
+                  class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${activeTab === tab.id
+                    ? 'brand-gradient text-white shadow-md shadow-sky-500/20'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-900'}">
+                  <span class="flex items-center gap-3 min-w-0">
+                    <i data-lucide="${tab.icon}" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate">${tab.label}</span>
+                  </span>
+                  ${unreadCount > 0 ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold ${activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-rose-500 text-white'}">${unreadCount}</span>` : ''}
+                </button>`;
+              }).join('')}
+            </nav>
+
+            <div class="mt-5 p-4 rounded-2xl bg-slate-900 text-slate-100 border border-slate-800">
+              <div class="flex items-center gap-2 text-xs font-bold text-teal-400 mb-1">
+                <i data-lucide="shield-ban" class="w-4 h-4"></i><span>AI Անվտանգության Պատնեշ</span>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">AI-ն գեներացնում է միայն թեմաներ և մեկուսացված է գնահատականներից։</p>
+            </div>
+          </aside>
+
+          <main class="flex-1 min-w-0 fade-in">
+            ${renderMainContent(user, activeTab)}
+          </main>
+        </div>
+      `;
+
+      if (window.lucide) window.lucide.createIcons();
+      initCharts(user.role, activeTab);
+      bindInlineForms();
+    }
+
+    function renderMainContent(user, tab) {
+      if (tab === 'profile') return renderProfileView(user);
+      if (user.role === 'chief') {
+        if (tab === 'dashboard') return renderChiefDashboard();
+        if (tab === 'schools') return renderChiefSchools();
+        if (tab === 'operators') return renderChiefOperators();
+        if (tab === 'subjects') return renderChiefSubjects();
+        if (tab === 'messages') return renderChiefMessages();
+        if (tab === 'security') return renderChiefSecurity();
+      }
+      if (user.role === 'school_op') {
+        if (tab === 'overview') return renderSchoolOverview(user);
+        if (tab === 'classes') return renderSchoolClasses(user);
+        if (tab === 'teachers') return renderSchoolTeachers(user);
+        if (tab === 'students') return renderSchoolStudents(user);
+        if (tab === 'schedule') return renderSchoolSchedule(user);
+        if (tab === 'access') return renderSchoolAccessSecurity(user);
+        if (tab === 'messages') return renderSchoolMessages(user);
+      }
+      if (user.role === 'teacher') {
+        if (tab === 'topics') return renderTeacherTopics(user);
+        if (tab === 'homework') return renderTeacherHomework(user);
+        if (tab === 'gradebook') return renderTeacherGradebook(user);
+        if (tab === 'attendance') return renderTeacherAttendance(user);
+        if (tab === 'my_schedule') return renderTeacherSchedule(user);
+      }
+      if (user.role === 'student') {
+        if (tab === 'overview') return renderStudentOverview(user);
+        if (tab === 'grades') return renderStudentGrades(user);
+        if (tab === 'attendance') return renderStudentAttendance(user);
+        if (tab === 'homework') return renderStudentHomework(user);
+        if (tab === 'topics') return renderStudentTopics(user);
+        if (tab === 'schedule') return renderStudentSchedule(user);
+      }
+      return '';
+    }
+
+    /* ================= PROFILE VIEW ================= */
+    function renderProfileView(user) {
+      const school = user.schoolId ? getSchoolById(user.schoolId) : null;
+      return `
+        <div class="space-y-5 max-w-3xl">
+          <div>
+            <h1 class="text-xl font-extrabold">Անձնական տվյալներ և անվտանգություն</h1>
+            <p class="text-sm text-slate-500">Մուտքանուն՝ <strong class="font-mono">@${escapeHtml(user.username)}</strong> · ${ROLE_META[user.role].label}${school ? ' · ' + escapeHtml(school.name) : ''}</p>
+          </div>
+          <form id="profile-edit-form" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="block text-xs font-semibold mb-1">Անուն Ազգանուն</label><input name="name" required value="${escapeHtml(user.name)}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>
+              <div><label class="block text-xs font-semibold mb-1">Մուտքանուն (Username)</label><input name="username" required value="${escapeHtml(user.username)}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono"></div>
+              <div><label class="block text-xs font-semibold mb-1">Էլ․ փոստ</label><input name="email" type="email" value="${escapeHtml(user.email || '')}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>
+              <div><label class="block text-xs font-semibold mb-1">Հեռախոսահամար</label><input name="phone" value="${escapeHtml(user.phone || '')}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>
+              <div><label class="block text-xs font-semibold mb-1">Ծննդյան ամսաթիվ</label><input name="birthDate" type="date" value="${escapeHtml(user.birthDate || '')}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>
+              <div><label class="block text-xs font-semibold mb-1">Բնակության հասցե</label><input name="address" value="${escapeHtml(user.address || '')}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>
+              ${user.role === 'student' ? `<div class="sm:col-span-2"><label class="block text-xs font-semibold mb-1">Ծնողի հեռախոսահամար</label><input name="parentPhone" value="${escapeHtml(user.parentPhone || '')}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></div>` : ''}
+            </div>
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+              <label class="block text-xs font-semibold mb-1">Նոր ուժեղ գաղտնաբառ (թողեք դատարկ՝ չփոխելու համար)</label>
+              <input name="newPassword" type="password" placeholder="A-Z, a-z, 0-9, !@# (≥8 նիշ)" class="w-full sm:w-1/2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+            </div>
+            <div class="flex justify-end"><button type="submit" class="px-5 py-2.5 rounded-xl brand-gradient text-white text-sm font-bold shadow-md">Պահպանել փոփոխությունները</button></div>
+          </form>
+        </div>
+      `;
+    }
+
+    /* ================= CHIEF OPERATOR VIEWS ================= */
+    function renderChiefDashboard() {
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 class="text-xl sm:text-2xl font-extrabold">Հանրապետական կառավարման վահանակ</h1>
+              <p class="text-sm text-slate-500">Դպրոցների, օպերատորների, առարկաների և անվտանգության կենտրոնացված կառավարում</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-action="open-add-operator" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold">+ Դպրոցի օպերատոր</button>
+              <button type="button" data-action="open-add-school" class="px-4 py-2 rounded-xl brand-gradient text-white text-xs font-bold shadow-sm">+ Նոր դպրոց</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            ${kpiCard('Դպրոցներ', state.schools.length, 'ՀՀ մարզերում', 'building-2', 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-300')}
+            ${kpiCard('Դպրոցի օպերատորներ', getOperators().length, 'Username + SHA-256', 'user-cog', 'text-sky-600 bg-sky-50 dark:bg-sky-950/60 dark:text-sky-300')}
+            ${kpiCard('Ուսուցիչ / Աշակերտ', `${getTeachers().length} / ${getStudents().length}`, 'Հեշավորված հաշիվներ', 'users', 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-300')}
+            ${kpiCard('Առարկաներ', state.subjects.length, 'Ամբողջական ցանկ', 'book-marked', 'text-amber-600 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-300')}
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+              <h2 class="text-sm font-bold mb-4">Դպրոցների միջին առաջադիմությունը</h2>
+              <div class="relative h-64"><canvas id="chart-national-marz"></canvas></div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+              <h2 class="text-sm font-bold mb-4">Վերջին անվտանգության իրադարձությունները</h2>
+              <div class="space-y-2 max-h-64 overflow-y-auto custom-scroll">
+                ${state.auditLogs.slice(0, 6).map(l => `
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
+                    <div class="flex justify-between gap-2"><span class="font-bold">${escapeHtml(l.actor)}</span><span class="font-mono text-[10px] text-slate-400">${escapeHtml(l.time)}</span></div>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">${escapeHtml(l.action)} — <span class="text-sky-600 dark:text-sky-400">${escapeHtml(l.target)}</span></p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChiefSchools() {
+      const q = state.filters.schoolSearch.trim().toLowerCase();
+      const filtered = state.schools.filter(s => !q || s.name.toLowerCase().includes(q) || s.marz.toLowerCase().includes(q));
+      return `
+        <div class="space-y-5">
+          <div class="flex items-center justify-between gap-3">
+            <h1 class="text-xl font-extrabold">Դպրոցների ռեեստր</h1>
+            <button type="button" data-action="open-add-school" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Նոր դպրոց</button>
+          </div>
+          <input type="text" data-filter="schoolSearch" value="${escapeHtml(state.filters.schoolSearch)}" placeholder="Որոնել դպրոց..." class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Դպրոց</th><th class="py-3 px-4">Մարզ</th><th class="py-3 px-4">Օպերատոր</th><th class="py-3 px-4 text-right">Գործողություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${filtered.map(s => {
+                    const op = getOperators().find(o => o.schoolId === s.id);
+                    return `<tr><td class="py-3 px-4 font-bold">${escapeHtml(s.name)}</td><td class="py-3 px-4 text-xs">${escapeHtml(s.marz)}</td><td class="py-3 px-4 text-xs">${op ? escapeHtml(op.name) + ' (@' + escapeHtml(op.username) + ')' : '—'}</td><td class="py-3 px-4 text-right whitespace-nowrap"><button type="button" data-action="open-edit-school" data-id="${s.id}" class="p-1.5 text-sky-600"><i data-lucide="pencil" class="w-4 h-4"></i></button><button type="button" data-action="delete-school" data-id="${s.id}" class="p-1.5 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChiefOperators() {
+      const q = state.filters.operatorSearch.trim().toLowerCase();
+      const ops = getOperators().filter(o => !q || o.name.toLowerCase().includes(q) || o.username.toLowerCase().includes(q));
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 class="text-xl font-extrabold">Դպրոցի օպերատորներ</h1>
+              <p class="text-sm text-slate-500">Ավելացրեք, խմբագրեք, կողպեք կամ ջնջեք դպրոցի օպերատորների հաշիվները</p>
+            </div>
+            <button type="button" data-action="open-add-operator" class="px-4 py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">+ Ավելացնել օպերատոր</button>
+          </div>
+          <input type="text" data-filter="operatorSearch" value="${escapeHtml(state.filters.operatorSearch)}" placeholder="Որոնել անունով կամ username-ով..." class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Օպերատոր / Username</th><th class="py-3 px-4">Դպրոց</th><th class="py-3 px-4 text-center">Անվտանգություն</th><th class="py-3 px-4 text-right">Գործողություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${ops.map(op => `
+                    <tr>
+                      <td class="py-3 px-4"><p class="font-bold">${escapeHtml(op.name)}</p><p class="text-xs font-mono text-sky-600 dark:text-sky-400">@${escapeHtml(op.username)}</p></td>
+                      <td class="py-3 px-4 text-xs">${escapeHtml(getSchoolById(op.schoolId)?.name || '—')}</td>
+                      <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${op.locked ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">${op.locked ? 'Կողպված' : 'Ակտիվ'}</span></td>
+                      <td class="py-3 px-4 text-right whitespace-nowrap">
+                        <button type="button" data-action="open-edit-operator" data-id="${op.id}" class="p-1.5 text-sky-600 mr-1" title="Խմբագրել"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                        <button type="button" data-action="toggle-user-lock" data-id="${op.id}" class="px-2 py-1 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 mr-1">${op.locked ? 'Ապակողպել' : 'Կողպել'}</button>
+                        <button type="button" data-action="delete-operator" data-id="${op.id}" class="p-1.5 text-rose-500" title="Ջնջել"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChiefSubjects() {
+      const q = state.filters.subjectSearch.trim().toLowerCase();
+      const filtered = state.subjects.filter(s => !q || s.toLowerCase().includes(q));
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h1 class="text-xl font-extrabold">Հանրակրթական առարկաներ (${state.subjects.length})</h1>
+            <form id="add-subject-form" class="flex gap-2">
+              <input name="subject" required placeholder="Նոր առարկա..." class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm">
+              <button type="submit" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Ավելացնել</button>
+            </form>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            ${filtered.map(sub => `<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between"><span class="font-bold text-sm">${escapeHtml(sub)}</span><button type="button" data-action="delete-subject" data-name="${escapeHtml(sub)}" class="text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-4 h-4"></i></button></div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChiefMessages() {
+      const f = state.filters.messageStatus || 'all';
+      const all = state.messages || [];
+      const list = f === 'all' ? all : all.filter(m => m.status === f);
+      const unreadCount = all.filter(m => m.status === 'unread').length;
+
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 class="text-xl font-extrabold">Նամակներ դպրոցների օպերատորներից</h1>
+              <p class="text-sm text-slate-500">Ընդհանուր ${all.length} նամակ · ${unreadCount} չկարդացված</p>
+            </div>
+            <select data-filter="messageStatus" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold">
+              <option value="all" ${f === 'all' ? 'selected' : ''}>Բոլոր նամակները</option>
+              <option value="unread" ${f === 'unread' ? 'selected' : ''}>Չկարդացված</option>
+              <option value="read" ${f === 'read' ? 'selected' : ''}>Կարդացված</option>
+              <option value="replied" ${f === 'replied' ? 'selected' : ''}>Պատասխանված</option>
+            </select>
+          </div>
+
+          <div class="space-y-4">
+            ${list.length ? list.map(m => {
+              const sender = getUserById(m.fromUserId);
+              const sch = getSchoolById(m.schoolId);
+              return `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border ${m.status === 'unread' ? 'border-sky-400 dark:border-sky-600 shadow-md' : 'border-slate-200 dark:border-slate-800 shadow-sm'} p-5 space-y-3">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div class="flex flex-wrap items-center gap-2 mb-1">
+                        ${m.priority === 'urgent' ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">Հրատապ</span>' : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Սովորական</span>'}
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${m.status === 'unread' ? 'bg-sky-100 text-sky-700' : m.status === 'replied' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                          ${m.status === 'unread' ? 'Չկարդացված' : m.status === 'replied' ? 'Պատասխանված' : 'Կարդացված'}
+                        </span>
+                        <span class="text-xs text-slate-400 font-mono">${escapeHtml(m.createdAt)}</span>
+                      </div>
+                      <h3 class="text-base font-extrabold text-slate-900 dark:text-white">${escapeHtml(m.subject)}</h3>
+                      <p class="text-xs text-slate-500 mt-0.5">Ուղարկող՝ <strong>${escapeHtml(sender ? sender.name : 'Օպերատոր')}</strong> (@${escapeHtml(sender ? sender.username : '')}) · ${escapeHtml(sch ? sch.name : '')}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      ${m.status === 'unread' ? `<button type="button" data-action="mark-msg-read" data-id="${m.id}" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">Նշել կարդացված</button>` : ''}
+                      <button type="button" data-action="open-reply-msg" data-id="${m.id}" class="px-3.5 py-1.5 rounded-xl brand-gradient text-white text-xs font-bold shadow-sm">${m.replyText ? 'Խմբագրել պատասխանը' : 'Պատասխանել'}</button>
+                    </div>
+                  </div>
+                  <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl">${escapeHtml(m.body)}</p>
+                  ${m.replyText ? `
+                    <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
+                      <p class="font-bold text-emerald-800 dark:text-emerald-300">Ձեր պատասխանը (${escapeHtml(m.repliedAt)})</p>
+                      <p class="text-emerald-900 dark:text-emerald-100 whitespace-pre-line">${escapeHtml(m.replyText)}</p>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('') : '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-10 text-center text-sm text-slate-500">Այս բաժնում նամակներ չկան</div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChiefSecurity() {
+      const p = state.securityPolicies;
+      return `
+        <div class="space-y-5">
+          <div>
+            <h1 class="text-xl font-extrabold">Անվտանգության քաղաքականություն և Սերվերի սինխրոնիզացիա</h1>
+            <p class="text-sm text-slate-500">Կառավարեք մուտքի անվտանգությունը և փոխանցեք կամ սինխրոնացրեք տվյալների բազան տարբեր համակարգիչների միջև</p>
+          </div>
+
+          <!-- Server Sync / Cross-Computer Database Panel -->
+          <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl border border-indigo-500/40 p-5 shadow-md space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2 text-teal-400 text-xs font-bold"><i data-lucide="server" class="w-4 h-4"></i> ԿԵՆՏՐՈՆԱԿԱՆ ՍԵՐՎԵՐ ԵՎ ՏՎՅԱԼՆԵՐԻ ՍԻՆԽՐՈՆԻԶԱՑԻԱ</div>
+                <p class="text-xs text-slate-300 mt-1">Այս նախադիտման մեջ տվյալները պահվում են տեղային բրաուզերում։ Մեկ այլ համակարգչի հետ նույն բազան ունենալու համար արտահանեք կամ ներմուծեք տվյալների բազան ստորև, կամ գործարկեք կից <strong>daran-server.zip</strong> կենտրոնական սերվերը։</p>
+              </div>
+              <div class="flex flex-wrap gap-2 shrink-0">
+                <button type="button" data-action="export-db" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-slate-950 text-xs font-extrabold transition">
+                  <i data-lucide="download" class="w-4 h-4"></i> Արտահանել բազան (.json)
+                </button>
+                <label class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold cursor-pointer transition">
+                  <i data-lucide="upload" class="w-4 h-4"></i> Ներմուծել բազա (.json)
+                  <input type="file" id="import-db-input" accept=".json" class="hidden">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${policyToggleCard('ipRestriction', 'Դպրոցական ցանցի IP ստուգում', 'Սահմանափակել վարչական մուտքը վավերացված ցանցերով', p.ipRestriction)}
+            ${policyToggleCard('enforceStrongPasswords', 'Ուժեղ գաղտնաբառերի պարտադիր ստուգում', 'Մեծատառ, փոքրատառ, թիվ և հատուկ նիշ (≥8)', p.enforceStrongPasswords)}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
+              <div><p class="text-sm font-bold">Առավելագույն սխալ փորձեր</p><p class="text-xs text-slate-500">Ավտոմատ կողպում brute-force-ից</p></div>
+              <select data-policy-select="maxFailedAttempts" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold">
+                <option value="2" ${p.maxFailedAttempts == 2 ? 'selected' : ''}>2 փորձ</option>
+                <option value="3" ${p.maxFailedAttempts == 3 ? 'selected' : ''}>3 փորձ</option>
+                <option value="5" ${p.maxFailedAttempts == 5 ? 'selected' : ''}>5 փորձ</option>
+              </select>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
+              <div><p class="text-sm font-bold">Տվյալների վերականգնում</p><p class="text-xs text-slate-500">Վերադարձնել սկզբնական վիճակին</p></div>
+              <button type="button" data-action="reset-demo" class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold">Վերականգնել</button>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+            <h2 class="text-sm font-bold mb-3">Անփոփոխելի Աուդիտի մատյան (${state.auditLogs.length})</h2>
+            <div class="overflow-x-auto max-h-72 overflow-y-auto custom-scroll">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500"><th class="py-2 px-3">Ժամանակ</th><th class="py-2 px-3">Օգտատեր</th><th class="py-2 px-3">Գործողություն</th><th class="py-2 px-3">Թիրախ</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${state.auditLogs.map(l => `<tr><td class="py-2 px-3 font-mono text-slate-500 whitespace-nowrap">${escapeHtml(l.time)}</td><td class="py-2 px-3 font-bold">${escapeHtml(l.actor)}</td><td class="py-2 px-3">${escapeHtml(l.action)}</td><td class="py-2 px-3 text-slate-500">${escapeHtml(l.target)}</td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ================= SCHOOL OPERATOR VIEWS ================= */
+    function renderSchoolOverview(user) {
+      const sch = getSchoolById(user.schoolId) || state.schools[0];
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div><h1 class="text-xl font-extrabold">${escapeHtml(sch.name)}</h1><p class="text-sm text-slate-500">Դպրոցի օպերատորի վահանակ</p></div>
+            <div class="flex gap-2">
+              <button type="button" data-action="open-add-teacher" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold">+ Ուսուցիչ</button>
+              <button type="button" data-action="open-add-student" class="px-3.5 py-2 rounded-xl brand-gradient text-white text-xs font-bold">+ Աշակերտ</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            ${kpiCard('Դասարաններ', state.classes.filter(c => c.schoolId === sch.id).length, 'Ակտիվ', 'grid-2x2', 'text-sky-600 bg-sky-50 dark:bg-sky-950/60')}
+            ${kpiCard('Ուսուցիչներ', getTeachers(sch.id).length, 'Username մուտքով', 'briefcase', 'text-teal-600 bg-teal-50 dark:bg-teal-950/60')}
+            ${kpiCard('Աշակերտներ', getStudents(sch.id).length, 'Username մուտքով', 'users', 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60')}
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+            <h2 class="text-sm font-bold mb-4">Աշակերտների բաշխվածությունն ըստ դասարանների</h2>
+            <div class="relative h-64"><canvas id="chart-school-classes"></canvas></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchoolClasses(user) {
+      const classes = state.classes.filter(c => c.schoolId === (user.schoolId || 'sch-1'));
+      return `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between"><h1 class="text-xl font-extrabold">Դասարաններ</h1><button type="button" data-action="open-add-class" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Նոր դասարան</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${classes.map(c => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between"><div><p class="font-bold">${escapeHtml(c.name)} դասարան · սենյակ ${escapeHtml(c.room)}</p><p class="text-xs text-slate-500">Դասղեկ՝ ${escapeHtml(getUserById(c.homeroomTeacherId)?.name || '—')}</p></div><button type="button" data-action="delete-class" data-id="${c.id}" class="text-rose-500 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchoolTeachers(user) {
+      const teachers = getTeachers(user.schoolId || 'sch-1');
+      return `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between"><h1 class="text-xl font-extrabold">Ուսուցիչներ</h1><button type="button" data-action="open-add-teacher" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Ավելացնել ուսուցիչ</button></div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Ուսուցիչ / Username</th><th class="py-3 px-4">Առարկաներ</th><th class="py-3 px-4">Դասարաններ</th><th class="py-3 px-4 text-right">Գործողություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${teachers.map(t => `<tr><td class="py-3 px-4"><p class="font-bold">${escapeHtml(t.name)}</p><p class="text-xs font-mono text-sky-600">@${escapeHtml(t.username)}</p></td><td class="py-3 px-4 text-xs">${(t.subjects || []).join(', ')}</td><td class="py-3 px-4 text-xs font-bold">${(t.classes || []).join(', ')}</td><td class="py-3 px-4 text-right whitespace-nowrap"><button type="button" data-action="open-edit-teacher" data-id="${t.id}" class="p-1.5 text-sky-600"><i data-lucide="pencil" class="w-4 h-4"></i></button><button type="button" data-action="delete-user" data-id="${t.id}" class="p-1.5 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchoolStudents(user) {
+      const students = getStudents(user.schoolId || 'sch-1');
+      return `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between"><h1 class="text-xl font-extrabold">Աշակերտներ (Username մուտքով)</h1><button type="button" data-action="open-add-student" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Ավելացնել աշակերտ</button></div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Աշակերտ / Username</th><th class="py-3 px-4">Դասարան</th><th class="py-3 px-4 text-center">Բացականեր (Բ / Հ)</th><th class="py-3 px-4 text-right">Գործողություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${students.map(s => {
+                    const st = getAttendanceStats(s.id);
+                    return `<tr><td class="py-3 px-4"><p class="font-bold">${escapeHtml(s.name)}</p><p class="text-xs font-mono text-sky-600">@${escapeHtml(s.username)}</p></td><td class="py-3 px-4 text-xs font-bold">${escapeHtml(s.className)}</td><td class="py-3 px-4 text-center text-xs"><span class="text-rose-600 font-bold">${st.absent}</span> / <span class="text-amber-600 font-bold">${st.excused}</span></td><td class="py-3 px-4 text-right whitespace-nowrap"><button type="button" data-action="open-edit-student" data-id="${s.id}" class="p-1.5 text-sky-600"><i data-lucide="pencil" class="w-4 h-4"></i></button><button type="button" data-action="delete-user" data-id="${s.id}" class="p-1.5 text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchoolSchedule(user) {
+      const schoolClasses = getClasses(user.schoolId);
+      const cls = schoolClasses.some(c => c.name === state.filters.scheduleClass) ? state.filters.scheduleClass : (schoolClasses[0]?.name || '');
+      const slots = state.scheduleSlots.filter(s => s.schoolId === user.schoolId && s.className === cls);
+      return `
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div><h1 class="text-xl font-extrabold">Դասացուցակ և կոնֆլիկտների արգելափակում</h1><p class="text-xs text-slate-500">Մեկ ուսուցիչը չի կարող նույն ժամին երկու դասարանում կամ այլ դպրոցում դաս տալ</p></div>
+            <div class="flex gap-2">
+              <select data-filter="scheduleClass" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold">${schoolClasses.map(c => `<option ${cls === c.name ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select>
+              <button type="button" data-action="open-add-slot" class="px-4 py-2 rounded-xl brand-gradient text-white text-xs font-bold">+ Դասաժամ</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${DAYS.map(day => {
+              const ds = slots.filter(s => s.day === day).sort((a, b) => a.time.localeCompare(b.time));
+              return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4"><h3 class="font-bold text-sm brand-text mb-2">${day}</h3>${ds.length ? ds.map(sl => `<div class="p-2 mb-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex justify-between text-xs"><div><p class="font-bold">${sl.time} · ${escapeHtml(sl.subject)}</p><p class="text-slate-500">${escapeHtml(getUserById(sl.teacherId)?.name || '')}</p></div><button type="button" data-action="delete-slot" data-id="${sl.id}" class="text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-4 h-4"></i></button></div>`).join('') : '<p class="text-xs text-slate-400">Դասեր չկան</p>'}</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchoolAccessSecurity(user) {
+      const list = state.users.filter(u => u.schoolId === (user.schoolId || 'sch-1') && (u.role === 'teacher' || u.role === 'student'));
+      return `
+        <div class="space-y-4">
+          <h1 class="text-xl font-extrabold">Մուտքի անվտանգություն (Ուսուցիչներ և Աշակերտներ)</h1>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Օգտատեր / Username</th><th class="py-3 px-4">Դեր</th><th class="py-3 px-4 text-center">Կարգավիճակ</th><th class="py-3 px-4 text-right">Կառավարում</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${list.map(u => `<tr><td class="py-3 px-4"><p class="font-bold">${escapeHtml(u.name)}</p><p class="text-xs font-mono text-sky-600">@${escapeHtml(u.username)}</p></td><td class="py-3 px-4 text-xs">${ROLE_META[u.role].label}</td><td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-xs font-bold ${u.locked ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">${u.locked ? 'Կողպված' : 'Ակտիվ'}</span></td><td class="py-3 px-4 text-right whitespace-nowrap"><button type="button" data-action="open-reset-pass" data-id="${u.id}" class="px-2.5 py-1 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 mr-1">Նոր գաղտնաբառ</button><button type="button" data-action="toggle-user-lock" data-id="${u.id}" class="px-2.5 py-1 rounded-lg text-xs font-bold ${u.locked ? 'bg-emerald-600 text-white' : 'bg-rose-50 text-rose-600'}">${u.locked ? 'Ապակողպել' : 'Կողպել'}</button></td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+
+    function renderSchoolMessages(user) {
+      const myMessages = (state.messages || []).filter(m => m.schoolId === user.schoolId);
+      const sch = getSchoolById(user.schoolId);
+      return `
+        <div class="space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 class="text-xl font-extrabold">Նամակներ գլխավոր օպերատորին</h1>
+              <p class="text-sm text-slate-500">Ուղիղ պաշտոնական կապ հանրապետական գլխավոր օպերատորի հետ (${escapeHtml(sch ? sch.name : '')})</p>
+            </div>
+            <button type="button" data-action="open-compose-msg" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl brand-gradient text-white text-sm font-bold shadow-md hover:opacity-95 transition">
+              <i data-lucide="send" class="w-4 h-4"></i> Գրել նոր նամակ
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            ${myMessages.length ? myMessages.map(m => `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                      ${m.priority === 'urgent' ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">Հրատապ</span>' : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Սովորական</span>'}
+                      <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${m.status === 'replied' ? 'bg-emerald-100 text-emerald-700' : m.status === 'read' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}">
+                        ${m.status === 'replied' ? 'Պատասխանված է' : m.status === 'read' ? 'Կարդացված է' : 'Ուղարկված է'}
+                      </span>
+                      <span class="text-xs text-slate-400 font-mono">${escapeHtml(m.createdAt)}</span>
+                    </div>
+                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white">${escapeHtml(m.subject)}</h3>
+                  </div>
+                  ${m.status === 'unread' ? `<button type="button" data-action="delete-msg" data-id="${m.id}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500" title="Ջնջել նամակը"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                </div>
+                <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl">${escapeHtml(m.body)}</p>
+                ${m.replyText ? `
+                  <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
+                    <p class="font-bold text-emerald-800 dark:text-emerald-300">Գլխավոր օպերատորի պատասխանը · ${escapeHtml(m.repliedBy)} (${escapeHtml(m.repliedAt)})</p>
+                    <p class="text-emerald-900 dark:text-emerald-100 whitespace-pre-line">${escapeHtml(m.replyText)}</p>
+                  </div>
+                ` : '<p class="text-xs text-slate-400">Սպասում է գլխավոր օպերատորի արձագանքին...</p>'}
+              </div>
+            `).join('') : '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-10 text-center text-sm text-slate-500">Դեռևս ուղարկված նամակներ չկան։ Սեղմեք «Գրել նոր նամակ»՝ գլխավոր օպերատորին դիմելու համար։</div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    /* ================= TEACHER VIEWS (INCLUDING DATE-BY-DATE ATTENDANCE) ================= */
+    function renderTeacherBar(user) {
+      const schoolClassNames = getClasses(user.schoolId).map(c => c.name);
+      const classes = (user.classes && user.classes.length) ? user.classes.filter(c => schoolClassNames.includes(c)) : schoolClassNames;
+      if (classes.length && !classes.includes(state.filters.teacherClass)) state.filters.teacherClass = classes[0];
+      const subjects = (user.subjects && user.subjects.length) ? user.subjects : state.subjects;
+      return `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div class="flex flex-wrap items-center gap-3">
+            <select data-filter="teacherClass" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold">${classes.map(c => `<option ${state.filters.teacherClass === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>
+            <select data-filter="teacherSubject" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold">${subjects.map(s => `<option ${state.filters.teacherSubject === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}</select>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-xs font-semibold">AI-ն միայն թեմաների համար է</span>
+        </div>
+      `;
+    }
+
+    function renderTeacherTopics(user) {
+      const list = state.topics.filter(t => (!t.schoolId || t.schoolId === user.schoolId) && t.className === state.filters.teacherClass && t.subject === state.filters.teacherSubject);
+      return `
+        <div>
+          ${renderTeacherBar(user)}
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h1 class="text-xl font-extrabold">Ուսումնական թեմաներ</h1>
+            <div class="flex gap-2">
+              <button type="button" data-action="open-ai-topic" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold"><i data-lucide="sparkles" class="w-4 h-4"></i> AI Թեմայի գեներացիա</button>
+              <button type="button" data-action="open-add-topic" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold">+ Ձեռքով</button>
+            </div>
+          </div>
+          <div class="space-y-3">
+            ${list.length ? list.map(t => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm"><div class="flex justify-between"><div><span class="text-xs font-bold text-sky-600">${escapeHtml(t.subject)} · ${t.date} ${t.aiGenerated ? '· AI' : ''}</span><h3 class="font-bold mt-1">${escapeHtml(t.title)}</h3></div><button type="button" data-action="delete-topic" data-id="${t.id}" class="text-slate-400 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line mt-2">${escapeHtml(t.plan)}</p></div>`).join('') : '<div class="bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-sm text-slate-500">Թեմաներ չկան</div>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTeacherHomework(user) {
+      const list = state.homeworks.filter(h => (!h.schoolId || h.schoolId === user.schoolId) && h.className === state.filters.teacherClass);
+      return `
+        <div>
+          ${renderTeacherBar(user)}
+          <div class="flex items-center justify-between mb-4"><h1 class="text-xl font-extrabold">Տնային առաջադրանքներ</h1><button type="button" data-action="open-add-hw" class="px-4 py-2 rounded-xl brand-gradient text-white text-sm font-bold">+ Նոր առաջադրանք</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${list.map(hw => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm"><div class="flex justify-between"><span class="text-xs font-bold text-teal-600">${escapeHtml(hw.subject)}</span><button type="button" data-action="delete-hw" data-id="${hw.id}" class="text-slate-400 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><h3 class="font-bold mt-1">${escapeHtml(hw.title)}</h3><p class="text-xs text-slate-500 mt-1">${escapeHtml(hw.description)}</p><p class="text-[11px] text-slate-400 mt-2">Մինչև ${hw.dueDate}</p></div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTeacherGradebook(user) {
+      const students = getStudents(user.schoolId).filter(s => s.className === state.filters.teacherClass);
+      const subject = state.filters.teacherSubject;
+      return `
+        <div>
+          ${renderTeacherBar(user)}
+          <div class="mb-4 p-3.5 rounded-2xl bg-slate-900 text-white border border-amber-400/40 flex items-center justify-between text-xs">
+            <span><strong class="text-amber-300">Միայն ուսուցչի ձեռքով գնահատում․</strong> AI միջամտությունը բացառված է։</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">AI-ՄԵԿՈՒՍԱՑՎԱԾ</span>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Աշակերտ</th><th class="py-3 px-4">Գնահատականներ (${escapeHtml(subject)})</th><th class="py-3 px-4 text-center">Միջին</th><th class="py-3 px-4 text-right">Գործողություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${students.length ? students.map(stu => {
+                    const list = state.grades.filter(g => g.studentId === stu.id && g.subject === subject);
+                    return `<tr><td class="py-3 px-4 font-bold">${escapeHtml(stu.name)}</td><td class="py-3 px-4"><div class="flex flex-wrap gap-1.5">${list.length ? list.map(g => `<button type="button" data-action="delete-grade" data-id="${g.id}" title="${escapeHtml(g.date + ' · ' + (g.comment || ''))} (սեղմեք՝ ջնջելու համար)" class="px-2.5 py-0.5 rounded-lg text-xs font-bold border hover:opacity-75 transition ${scoreBadgeClass(g.score)}">${g.score} ×</button>`).join('') : '<span class="text-xs text-slate-400">—</span>'}</div></td><td class="py-3 px-4 text-center font-extrabold">${getStudentAverage(stu.id, subject) || '—'}</td><td class="py-3 px-4 text-right"><button type="button" data-action="open-add-grade" data-student-id="${stu.id}" class="px-3 py-1.5 rounded-xl brand-gradient text-white text-xs font-bold">+ Գնահատել</button></td></tr>`;
+                  }).join('') : '<tr><td colspan="4" class="py-8 text-center text-xs text-slate-400">Ձեր դպրոցի այս դասարանում աշակերտներ չկան</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTeacherAttendance(user) {
+      const students = getStudents(user.schoolId).filter(s => s.className === state.filters.teacherClass);
+      const selectedDate = state.filters.attendanceDate || '2026-11-20';
+      const dates = [...new Set([...RECENT_DATES, selectedDate])].sort();
+
+      return `
+        <div>
+          ${renderTeacherBar(user)}
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h1 class="text-xl font-extrabold">Հաճախումների մատյան (օրերով)</h1>
+              <p class="text-xs text-slate-500">Սեղմեք ցանկացած օրվա վանդակի վրա՝ փոխելու համար․ <strong>Ն</strong> (Ներկա) → <strong>Բ</strong> (Բացակա) → <strong>Հ</strong> (Հարգելի) → <strong>Ու</strong> (Ուշացում)</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500">Ավելացնել ամսաթիվ․</span>
+              <input type="date" data-filter="attendanceDate" value="${escapeHtml(selectedDate)}" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold">
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs text-slate-500">
+                    <th class="py-3 px-4 font-bold">Աշակերտ</th>
+                    ${dates.map(d => `<th class="py-3 px-2 text-center font-mono ${d === selectedDate ? 'text-sky-600 font-extrabold' : ''}">${d.slice(5)}</th>`).join('')}
+                    <th class="py-3 px-4 text-center font-bold">Բացականեր (Բ/Հ)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${students.map(stu => {
+                    const stats = getAttendanceStats(stu.id);
+                    return `
+                      <tr>
+                        <td class="py-3 px-4 font-bold whitespace-nowrap">${escapeHtml(stu.name)}</td>
+                        ${dates.map(d => {
+                          const rec = getAttendanceForDate(stu.id, d);
+                          const st = rec ? rec.status : '—';
+                          return `
+                            <td class="py-2.5 px-2 text-center">
+                              <button type="button" data-action="cycle-attendance" data-student-id="${stu.id}" data-date="${d}"
+                                title="${d} · ${attLabel(st)}"
+                                class="w-9 h-8 rounded-lg font-extrabold text-xs border transition hover:scale-105 ${attBadge(st)}">${st}</button>
+                            </td>
+                          `;
+                        }).join('')}
+                        <td class="py-3 px-4 text-center text-xs font-bold whitespace-nowrap">
+                          <span class="text-rose-600">${stats.absent} Բ</span> · <span class="text-amber-600">${stats.excused} Հ</span>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTeacherSchedule(user) {
+      const mySlots = state.scheduleSlots.filter(s => s.schoolId === user.schoolId && s.teacherId === user.id);
+      return `
+        <div class="space-y-4">
+          <h1 class="text-xl font-extrabold">Իմ շաբաթական դասացուցակը</h1>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${DAYS.map(day => {
+              const ds = mySlots.filter(s => s.day === day).sort((a, b) => a.time.localeCompare(b.time));
+              return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4"><h3 class="font-bold text-sm brand-text mb-2">${day}</h3>${ds.length ? ds.map(sl => `<div class="p-2 mb-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs"><p class="font-bold">${sl.time} · ${escapeHtml(sl.className)}</p><p class="text-slate-500">${escapeHtml(sl.subject)}</p></div>`).join('') : '<p class="text-xs text-slate-400">Ազատ օր</p>'}</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    /* ================= STUDENT VIEWS (INCLUDING DAILY ABSENCES) ================= */
+    function renderStudentOverview(user) {
+      const gpa = getStudentAverage(user.id) || '—';
+      const att = getAttendanceStats(user.id);
+      const myHw = state.homeworks.filter(h => (!h.schoolId || h.schoolId === user.schoolId) && h.className === user.className);
+      const done = myHw.filter(h => h.completedBy.includes(user.id)).length;
+      return `
+        <div class="space-y-5">
+          <div><h1 class="text-xl font-extrabold">Բարև, ${escapeHtml(user.name)}</h1><p class="text-sm text-slate-500">${escapeHtml(user.className)} դասարան · @${escapeHtml(user.username)}</p></div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            ${kpiCard('Միջին գնահատական', gpa === '—' ? '—' : `${gpa} / 10`, 'Ակտիվ ուս․ տարի', 'award', 'text-amber-600 bg-amber-50 dark:bg-amber-950/60')}
+            ${kpiCard('Հաճախելիություն', `${att.pct}%`, `${att.absent} անհարգելի · ${att.excused} հարգելի`, 'calendar-check', 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60')}
+            ${kpiCard('Տնայիններ', `${done} / ${myHw.length}`, 'Կատարված առաջադրանքներ', 'check-square', 'text-sky-600 bg-sky-50 dark:bg-sky-950/60')}
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+            <h3 class="text-sm font-bold mb-4">Առաջադիմությունն ըստ առարկաների</h3>
+            <div class="relative h-64"><canvas id="chart-student-subjects"></canvas></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStudentAttendance(user) {
+      const stats = getAttendanceStats(user.id);
+      const sorted = [...stats.recs].sort((a, b) => b.date.localeCompare(a.date));
+      return `
+        <div class="space-y-5">
+          <div>
+            <h1 class="text-xl font-extrabold">Իմ հաճախումները և բացակաները (օրերով)</h1>
+            <p class="text-sm text-slate-500">Ամբողջական օրացուցային պատմություն՝ նշված ուսուցիչների կողմից</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            ${kpiCard('Ներկա (Ն)', stats.present, 'օր', 'check-circle-2', 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60')}
+            ${kpiCard('Բացակա (Բ)', stats.absent, 'անհարգելի', 'x-circle', 'text-rose-600 bg-rose-50 dark:bg-rose-950/60')}
+            ${kpiCard('Հարգելի (Հ)', stats.excused, 'տեղեկանքով', 'file-check', 'text-amber-600 bg-amber-50 dark:bg-amber-950/60')}
+            ${kpiCard('Ուշացում (Ու)', stats.late, 'անգամ', 'clock', 'text-sky-600 bg-sky-50 dark:bg-sky-950/60')}
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Ամսաթիվ</th><th class="py-3 px-4">Առարկա</th><th class="py-3 px-4 text-center">Կարգավիճակ</th><th class="py-3 px-4">Նշում</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${sorted.length ? sorted.map(r => `
+                    <tr>
+                      <td class="py-3 px-4 font-mono text-xs font-bold">${escapeHtml(r.date)}</td>
+                      <td class="py-3 px-4 text-xs font-semibold">${escapeHtml(r.subject || 'Ընդհանուր')}</td>
+                      <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-lg text-xs font-bold border ${attBadge(r.status)}">${r.status} · ${attLabel(r.status)}</span></td>
+                      <td class="py-3 px-4 text-xs text-slate-500">${escapeHtml(r.note || '—')}</td>
+                    </tr>
+                  `).join('') : '<tr><td colspan="4" class="py-8 text-center text-xs text-slate-400">Գրանցված օրեր դեռ չկան</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStudentGrades(user) {
+      const list = state.grades.filter(g => g.studentId === user.id);
+      return `
+        <div class="space-y-4">
+          <h1 class="text-xl font-extrabold">Իմ գնահատականները</h1>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead><tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-xs uppercase text-slate-500"><th class="py-3 px-4">Ամսաթիվ</th><th class="py-3 px-4">Առարկա</th><th class="py-3 px-4 text-center">Գնահատական</th><th class="py-3 px-4">Մեկնաբանություն</th></tr></thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  ${list.length ? list.map(g => `<tr><td class="py-3 px-4 text-xs font-mono text-slate-500">${g.date}</td><td class="py-3 px-4 font-bold">${escapeHtml(g.subject)}</td><td class="py-3 px-4 text-center"><span class="px-3 py-1 rounded-xl text-sm font-extrabold border ${scoreBadgeClass(g.score)}">${g.score}</span></td><td class="py-3 px-4 text-xs text-slate-500">${escapeHtml(g.comment || '—')}</td></tr>`).join('') : '<tr><td colspan="4" class="py-8 text-center text-xs text-slate-400">Գնահատականներ չկան</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStudentHomework(user) {
+      const list = state.homeworks.filter(h => (!h.schoolId || h.schoolId === user.schoolId) && h.className === user.className);
+      return `
+        <div class="space-y-4">
+          <h1 class="text-xl font-extrabold">Տնային առաջադրանքներ</h1>
+          ${list.map(hw => {
+            const done = hw.completedBy.includes(user.id);
+            return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col sm:flex-row justify-between gap-3"><div><span class="text-xs font-bold text-sky-600">${escapeHtml(hw.subject)} · մինչև ${hw.dueDate}</span><h3 class="font-bold mt-1 ${done ? 'line-through opacity-60' : ''}">${escapeHtml(hw.title)}</h3><p class="text-xs text-slate-500">${escapeHtml(hw.description)}</p></div><button type="button" data-action="toggle-student-hw" data-id="${hw.id}" class="px-4 py-2 rounded-xl text-xs font-bold self-start sm:self-center ${done ? 'bg-emerald-100 text-emerald-800' : 'brand-gradient text-white'}">${done ? 'Կատարված է' : 'Նշել կատարված'}</button></div>`;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderStudentTopics(user) {
+      const list = state.topics.filter(t => (!t.schoolId || t.schoolId === user.schoolId) && t.className === user.className);
+      return `<div class="space-y-4"><h1 class="text-xl font-extrabold">Դասի թեմաներ</h1>${list.map(t => `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4"><span class="text-xs font-bold text-indigo-600">${escapeHtml(t.subject)} · ${t.date}</span><h3 class="font-bold mt-1">${escapeHtml(t.title)}</h3><p class="text-xs text-slate-500 whitespace-pre-line mt-2">${escapeHtml(t.plan)}</p></div>`).join('')}</div>`;
+    }
+
+    function renderStudentSchedule(user) {
+      const slots = state.scheduleSlots.filter(s => s.schoolId === user.schoolId && s.className === user.className);
+      return `<div class="space-y-4"><h1 class="text-xl font-extrabold">Դասացուցակ (${escapeHtml(user.className)})</h1><div class="grid grid-cols-1 md:grid-cols-3 gap-4">${DAYS.map(day => {
+        const ds = slots.filter(s => s.day === day).sort((a, b) => a.time.localeCompare(b.time));
+        return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4"><h3 class="font-bold text-sm brand-text mb-2">${day}</h3>${ds.length ? ds.map(sl => `<div class="p-2 mb-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs"><p class="font-bold">${sl.time} · ${escapeHtml(sl.subject)}</p><p class="text-slate-500">${escapeHtml(getUserById(sl.teacherId)?.name || '')}</p></div>`).join('') : '<p class="text-xs text-slate-400">Դասեր չկան</p>'}</div>`;
+      }).join('')}</div></div>`;
+    }
+
+    function kpiCard(title, value, subtitle, icon, colorClass) {
+      return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex items-start justify-between gap-3"><div><p class="text-xs font-semibold text-slate-500">${escapeHtml(title)}</p><p class="text-2xl font-extrabold mt-1">${escapeHtml(value)}</p><p class="text-[11px] text-slate-400 mt-1">${escapeHtml(subtitle)}</p></div><div class="p-2.5 rounded-xl ${colorClass} shrink-0"><i data-lucide="${icon}" class="w-5 h-5"></i></div></div>`;
+    }
+
+    function policyToggleCard(key, title, desc, enabled) {
+      return `<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between gap-4"><div><p class="text-sm font-bold">${escapeHtml(title)}</p><p class="text-xs text-slate-500 mt-0.5">${escapeHtml(desc)}</p></div><button type="button" data-action="toggle-policy" data-key="${key}" class="w-12 h-6 rounded-full p-0.5 shrink-0 ${enabled ? 'bg-teal-500' : 'bg-slate-300 dark:bg-slate-700'}"><span class="block w-5 h-5 rounded-full bg-white shadow transform ${enabled ? 'translate-x-6' : 'translate-x-0'}"></span></button></div>`;
+    }
+
+    function initCharts(role, tab) {
+      if (!window.Chart) return;
+      const textColor = state.darkMode ? '#cbd5e1' : '#475569';
+      if (role === 'chief' && tab === 'dashboard') {
+        const c = document.getElementById('chart-national-marz');
+        if (c) chartInstances.push(new Chart(c, { type: 'bar', data: { labels: state.schools.map(s => s.marz), datasets: [{ data: state.schools.map(s => s.avgGrade), backgroundColor: ['#3B5BFF', '#18A0FB', '#14B8A6', '#6366F1', '#F59E0B'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 6, max: 10, ticks: { color: textColor } }, x: { ticks: { color: textColor } } } } }));
+      }
+      if (role === 'school_op' && tab === 'overview') {
+        const c = document.getElementById('chart-school-classes');
+        const sid = getCurrentUser()?.schoolId || 'sch-1';
+        const sClasses = getClasses(sid);
+        if (c) chartInstances.push(new Chart(c, { type: 'bar', data: { labels: sClasses.map(cl => cl.name), datasets: [{ data: sClasses.map(cl => getStudents(sid).filter(s => s.className === cl.name).length), backgroundColor: '#18A0FB', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor } }, x: { ticks: { color: textColor } } } } }));
+      }
+      if (role === 'student' && tab === 'overview') {
+        const c = document.getElementById('chart-student-subjects');
+        const user = getCurrentUser();
+        if (c && user) {
+          const subs = [...new Set(state.grades.filter(g => g.studentId === user.id).map(g => g.subject))];
+          const labels = subs.length ? subs : ['Մաթեմատիկա', 'Ֆիզիկա'];
+          chartInstances.push(new Chart(c, { type: 'bar', data: { labels, datasets: [{ data: labels.map(s => Number(getStudentAverage(user.id, s) || 0)), backgroundColor: ['#3B5BFF', '#18A0FB', '#F59E0B', '#14B8A6'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10, ticks: { color: textColor } }, x: { ticks: { color: textColor } } } } }));
+        }
+      }
+    }
+
+    /* ================= LOGIN & INLINE FORM HANDLERS ================= */
+    function bindLoginForms() {
+      const lf = document.getElementById('login-form');
+      if (lf) {
+        lf.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const fd = new FormData(lf);
+          const uname = String(fd.get('username') || '').trim().replace(/^@/, '').toLowerCase();
+          const pass = String(fd.get('password') || '');
+          const user = state.users.find(u => u.username.toLowerCase() === uname);
+          if (!user) { state.loginError = 'Նշված մուտքանունով (Username) հաշիվ չի գտնվել։'; return renderApp(); }
+          if (user.locked) { state.loginError = 'Հաշիվը կողպված է։ Դիմեք օպերատորին՝ ապակողպելու համար։'; return renderApp(); }
+          if (hashPassword(pass, user.salt) !== user.passwordHash) {
+            user.failedAttempts = (user.failedAttempts || 0) + 1;
+            if (user.failedAttempts >= state.securityPolicies.maxFailedAttempts) {
+              user.locked = true;
+              addAuditLog('Brute-force կողպում', '@' + user.username, 'security', user);
+              state.loginError = `Հաշիվը կողպվեց ${state.securityPolicies.maxFailedAttempts} սխալ փորձից հետո։`;
+            } else {
+              state.loginError = `Սխալ գաղտնաբառ (${user.failedAttempts}/${state.securityPolicies.maxFailedAttempts})։`;
+            }
+            saveState(); return renderApp();
+          }
+          user.failedAttempts = 0; state.loginError = '';
+          if (user.mustChangePassword) {
+            state.pendingUserId = user.id; state.loginStep = 'force_change'; return renderApp();
+          }
+          completeLogin(user);
+        });
+      }
+
+
+
+      const fpf = document.getElementById('force-pass-form');
+      if (fpf) {
+        fpf.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const np = String(new FormData(fpf).get('newPassword') || '').trim();
+          const st = checkPasswordStrength(np, state.securityPolicies.minPasswordLen);
+          if (state.securityPolicies.enforceStrongPasswords && !st.isStrong) {
+            state.loginError = 'Գաղտնաբառը պետք է ունենա ≥8 նիշ, մեծատառ, փոքրատառ, թիվ և հատուկ նիշ։';
+            return renderApp();
+          }
+          const u = getUserById(state.pendingUserId);
+          u.passwordHash = hashPassword(np, u.salt);
+          u.mustChangePassword = false;
+          saveState();
+          completeLogin(u);
+        });
+      }
+    }
+
+
+
+    function completeLogin(u) {
+      clearOtpTimer();
+      state.currentUserId = u.id;
+      state.isAuthenticated = true;
+      state.sessionToken = 'tok_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+      state.sessionStartedAt = Date.now();
+      state.loginStep = 'credentials';
+      state.loginError = '';
+      addAuditLog('Հաջողված անվտանգ մուտք (Username + SHA-256)', '@' + u.username, 'security', u);
+      saveState();
+      renderApp();
+      showToast(`Բարի գալուստ, ${u.name}`, 'success');
+    }
+
+    function bindInlineForms() {
+      const pf = document.getElementById('profile-edit-form');
+      if (pf) {
+        pf.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const fd = new FormData(pf);
+          const u = getCurrentUser();
+          const newUname = String(fd.get('username') || '').trim().toLowerCase();
+          if (state.users.some(x => x.id !== u.id && x.username.toLowerCase() === newUname)) {
+            return showToast('Այս մուտքանունն արդեն զբաղված է', 'error');
+          }
+          const np = String(fd.get('newPassword') || '').trim();
+          if (np && state.securityPolicies.enforceStrongPasswords && !checkPasswordStrength(np, state.securityPolicies.minPasswordLen).isStrong) {
+            return showToast('Գաղտնաբառը թույլ է (անհրաժեշտ է A-Z, a-z, 0-9, !@# և ≥8 նիշ)', 'warning');
+          }
+          u.name = String(fd.get('name')).trim();
+          u.username = newUname;
+          u.email = String(fd.get('email') || '').trim();
+          u.phone = String(fd.get('phone') || '').trim();
+          u.birthDate = String(fd.get('birthDate') || '');
+          u.address = String(fd.get('address') || '').trim();
+          if (u.role === 'student') u.parentPhone = String(fd.get('parentPhone') || '').trim();
+          if (np) { u.passwordHash = hashPassword(np, u.salt); }
+          addAuditLog('Անձնական տվյալների խմբագրում', '@' + u.username, 'info');
+          saveState(); renderApp(); showToast('Բոլոր փոփոխությունները հաջողությամբ պահպանվեցին', 'success');
+        });
+      }
+
+      const sf = document.getElementById('add-subject-form');
+      if (sf) {
+        sf.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const sub = String(new FormData(sf).get('subject') || '').trim();
+          if (sub && !state.subjects.includes(sub)) { state.subjects.unshift(sub); saveState(); renderApp(); showToast('Առարկան ավելացվեց', 'success'); }
+        });
+      }
+
+      const imp = document.getElementById('import-db-input');
+      if (imp) {
+        imp.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const parsed = JSON.parse(reader.result);
+              if (!parsed.users || !parsed.schools) throw new Error('invalid');
+              state = Object.assign(getDefaultState(), parsed, { isAuthenticated: true, currentUserId: state.currentUserId });
+              saveState(); renderApp();
+              showToast('Տվյալների բազան հաջողությամբ ներմուծվեց և սինխրոնացվեց', 'success');
+            } catch (err) {
+              showToast('Սխալ JSON ֆայլ', 'error');
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+    }
+
+    /* ================= MODALS ================= */
+    function openSchoolModal(editId = null) {
+      const s = editId ? getSchoolById(editId) : null;
+      openModal(s ? 'Խմբագրել դպրոցը' : 'Նոր դպրոց', `
+        <form id="school-form" class="space-y-3">
+          <input name="name" required value="${escapeHtml(s ? s.name : '')}" placeholder="Դպրոցի անվանում" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          <input name="marz" required value="${escapeHtml(s ? s.marz : 'Երևան')}" placeholder="Մարզ" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          <input name="address" required value="${escapeHtml(s ? s.address : '')}" placeholder="Հասցե" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Պահպանել</button>
+        </form>
+      `);
+      document.getElementById('school-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        if (s) { s.name = fd.get('name').trim(); s.marz = fd.get('marz').trim(); s.address = fd.get('address').trim(); }
+        else state.schools.unshift({ id: 'sch-' + Date.now(), name: fd.get('name').trim(), marz: fd.get('marz').trim(), address: fd.get('address').trim(), avgGrade: 8.4, status: 'active' });
+        closeModal(); saveState(); renderApp(); showToast('Պահպանվեց', 'success');
+      });
+    }
+
+    function openOperatorModal(editId = null) {
+      const op = editId ? getUserById(editId) : null;
+      const genPass = generateStrongPassword();
+      openModal(op ? 'Խմբագրել օպերատորին' : 'Նոր դպրոցի օպերատոր (Username + Ուժեղ գաղտնաբառ)', `
+        <form id="operator-form" class="space-y-3">
+          <input name="name" required value="${escapeHtml(op ? op.name : '')}" placeholder="Անուն Ազգանուն" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <input name="username" required value="${escapeHtml(op ? op.username : '')}" placeholder="Username (օր.՝ op.school5)" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+            <input name="password" ${op ? '' : 'required'} value="${op ? '' : genPass}" placeholder="${op ? 'Թողեք դատարկ' : 'Ուժեղ գաղտնաբառ'}" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+          </div>
+          <select name="schoolId" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">${state.schools.map(s => `<option value="${s.id}" ${op && op.schoolId === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}</select>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">${op ? 'Պահպանել' : 'Ստեղծել օպերատոր'}</button>
+        </form>
+      `);
+      document.getElementById('operator-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const uname = fd.get('username').trim().toLowerCase();
+        const pwd = fd.get('password').trim();
+        if (state.users.some(x => (!op || x.id !== op.id) && x.username.toLowerCase() === uname)) return showToast('Username-ն արդեն զբաղված է', 'error');
+        if (pwd && state.securityPolicies.enforceStrongPasswords && !checkPasswordStrength(pwd).isStrong) return showToast('Օգտագործեք ուժեղ գաղտնաբառ (A-Z, a-z, 0-9, !@#)', 'warning');
+        if (op) {
+          op.name = fd.get('name').trim(); op.username = uname; op.schoolId = fd.get('schoolId');
+          if (pwd) { op.passwordHash = hashPassword(pwd, op.salt); }
+        } else {
+          state.users.push(makeUser({ id: 'usr-op-' + Date.now(), role: 'school_op', name: fd.get('name').trim(), username: uname, schoolId: fd.get('schoolId'), mustChangePassword: true }, pwd));
+        }
+        addAuditLog(op ? 'Օպերատորի խմբագրում' : 'Նոր օպերատորի ստեղծում', '@' + uname, 'security');
+        closeModal(); saveState(); renderApp(); showToast('Պահպանվեց', 'success');
+      });
+    }
+
+    function openTeacherModal(editId = null) {
+      const t = editId ? getUserById(editId) : null;
+      const curSubs = t ? (t.subjects || []) : ['Մաթեմատիկա'];
+      const curCls = t ? (t.classes || []) : ['10-Բ'];
+      const genPass = generateStrongPassword();
+      openModal(t ? 'Խմբագրել ուսուցչին' : 'Նոր ուսուցիչ (Username + Ուժեղ գաղտնաբառ)', `
+        <form id="teacher-form" class="space-y-3">
+          <input name="name" required value="${escapeHtml(t ? t.name : '')}" placeholder="Անուն Ազգանուն" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <input name="username" required value="${escapeHtml(t ? t.username : '')}" placeholder="Username (օր.՝ anna.chem)" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+            <input name="password" ${t ? '' : 'required'} value="${t ? '' : genPass}" placeholder="${t ? 'Թողեք դատարկ' : 'Ուժեղ գաղտնաբառ'}" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+          </div>
+          <div><label class="block text-xs font-semibold mb-1">Դասարաններ (միայն Ձեր դպրոցի)</label><div class="flex flex-wrap gap-2">${getClasses(getCurrentUser()?.schoolId).map(c => `<label class="inline-flex items-center gap-1 px-2 py-1 rounded border text-xs"><input type="checkbox" name="classes" value="${escapeHtml(c.name)}" ${curCls.includes(c.name) ? 'checked' : ''}>${escapeHtml(c.name)}</label>`).join('')}</div></div>
+          <div><label class="block text-xs font-semibold mb-1">Առարկաներ</label><div class="grid grid-cols-2 sm:grid-cols-3 gap-1 max-h-36 overflow-y-auto p-2 border rounded-xl text-xs">${state.subjects.map(s => `<label class="inline-flex items-center gap-1"><input type="checkbox" name="subjects" value="${escapeHtml(s)}" ${curSubs.includes(s) ? 'checked' : ''}><span class="truncate">${escapeHtml(s)}</span></label>`).join('')}</div></div>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Պահպանել</button>
+        </form>
+      `, 'max-w-xl');
+      document.getElementById('teacher-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const uname = fd.get('username').trim().toLowerCase(), pwd = fd.get('password').trim();
+        const subjects = fd.getAll('subjects'), classes = fd.getAll('classes');
+        if (!subjects.length || !classes.length) return showToast('Ընտրեք առարկա և դասարան', 'warning');
+        if (state.users.some(x => (!t || x.id !== t.id) && x.username.toLowerCase() === uname)) return showToast('Username-ն արդեն զբաղված է', 'error');
+        if (pwd && state.securityPolicies.enforceStrongPasswords && !checkPasswordStrength(pwd).isStrong) return showToast('Գաղտնաբառը թույլ է', 'warning');
+        if (t) {
+          t.name = fd.get('name').trim(); t.username = uname; t.subjects = subjects; t.classes = classes;
+          if (pwd) { t.passwordHash = hashPassword(pwd, t.salt); }
+        } else {
+          state.users.push(makeUser({ id: 'usr-tch-' + Date.now(), role: 'teacher', schoolId: getCurrentUser().schoolId || 'sch-1', name: fd.get('name').trim(), username: uname, subjects, classes }, pwd));
+        }
+        addAuditLog(t ? 'Ուսուցչի խմբագրում' : 'Նոր ուսուցչի գրանցում', '@' + uname, 'security');
+        closeModal(); saveState(); renderApp(); showToast('Պահպանվեց', 'success');
+      });
+    }
+
+    function openStudentModal(editId = null) {
+      const s = editId ? getUserById(editId) : null;
+      const genPass = generateStrongPassword();
+      openModal(s ? 'Խմբագրել աշակերտին' : 'Նոր աշակերտ (Username + Անվտանգ մուտք)', `
+        <form id="student-form" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Աշակերտի Անուն Ազգանուն</label>
+            <input id="stu-name-inp" name="name" required value="${escapeHtml(s ? s.name : '')}" placeholder="օր.՝ Հայկ Սարգսյան" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Մուտքանուն (Username)</label>
+              <input id="stu-uname-inp" name="username" required value="${escapeHtml(s ? s.username : '')}" placeholder="ավտոմատ կամ ձեռքով" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Ուժեղ գաղտնաբառ</label>
+              <input name="password" ${s ? '' : 'required'} value="${s ? '' : genPass}" placeholder="${s ? 'Թողեք դատարկ' : 'Ուժեղ գաղտնաբառ'}" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <select name="className" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">${getClasses(getCurrentUser()?.schoolId).map(c => `<option ${s && s.className === c.name ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select>
+            <input name="parentPhone" value="${escapeHtml(s ? s.parentPhone : '+374 91 ')}" placeholder="Ծնողի հեռախոս" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          </div>
+          <label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" name="mustChangePassword" ${!s ? 'checked' : ''} class="accent-teal-600"> Պարտադրել գաղտնաբառի փոփոխություն առաջին մուտքին</label>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">${s ? 'Պահպանել' : 'Գրանցել աշակերտին'}</button>
+        </form>
+      `);
+      const nameInp = document.getElementById('stu-name-inp');
+      const unameInp = document.getElementById('stu-uname-inp');
+      if (!s && nameInp && unameInp) {
+        nameInp.addEventListener('blur', () => { if (!unameInp.value.trim() && nameInp.value.trim()) unameInp.value = generateUsernameFromName(nameInp.value); });
+      }
+      document.getElementById('student-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const uname = fd.get('username').trim().toLowerCase(), pwd = fd.get('password').trim();
+        if (state.users.some(x => (!s || x.id !== s.id) && x.username.toLowerCase() === uname)) return showToast('Այս Username-ն արդեն զբաղված է', 'error');
+        if (pwd && state.securityPolicies.enforceStrongPasswords && !checkPasswordStrength(pwd).isStrong) return showToast('Գաղտնաբառը պետք է լինի ուժեղ (A-Z, a-z, 0-9, !@#)', 'warning');
+        if (s) {
+          s.name = fd.get('name').trim(); s.username = uname; s.className = fd.get('className'); s.parentPhone = fd.get('parentPhone').trim();
+          if (pwd) { s.passwordHash = hashPassword(pwd, s.salt); }
+        } else {
+          state.users.push(makeUser({
+            id: 'usr-stu-' + Date.now(), role: 'student', schoolId: getCurrentUser().schoolId || 'sch-1',
+            code: 'DRN-' + (getStudents().length + 1), name: fd.get('name').trim(), username: uname,
+            className: fd.get('className'), parentPhone: fd.get('parentPhone').trim(),
+            twoFA: false, mustChangePassword: fd.get('mustChangePassword') === 'on'
+          }, pwd));
+        }
+        addAuditLog(s ? 'Աշակերտի խմբագրում' : 'Նոր աշակերտի գրանցում (Username)', '@' + uname, 'security');
+        closeModal(); saveState(); renderApp(); showToast(`Պահպանվեց (@${uname})`, 'success');
+      });
+    }
+
+    function openAddClassModal() {
+      const sid = getCurrentUser()?.schoolId || 'sch-1';
+      openModal('Նոր դասարան', `<form id="add-class-form" class="space-y-3"><input name="name" required placeholder="12-Ա" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"><input name="room" required placeholder="Սենյակ 308" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"><select name="homeroomTeacherId" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">${getTeachers(sid).map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select><button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Ստեղծել</button></form>`);
+      document.getElementById('add-class-form').addEventListener('submit', (e) => {
+        e.preventDefault(); const fd = new FormData(e.target);
+        state.classes.push({ id: 'cls-' + Date.now(), schoolId: getCurrentUser().schoolId || 'sch-1', name: fd.get('name').trim(), room: fd.get('room').trim(), homeroomTeacherId: fd.get('homeroomTeacherId'), capacity: 26 });
+        closeModal(); saveState(); renderApp(); showToast('Դասարանը ստեղծվեց', 'success');
+      });
+    }
+
+    function openAddSlotModal() {
+      const sid = getCurrentUser()?.schoolId || 'sch-1';
+      openModal('Ավելացնել դասաժամ', `
+        <form id="add-slot-form" class="space-y-3">
+          <div id="slot-conflict-box" class="hidden p-3 rounded-xl bg-rose-50 text-xs text-rose-700 font-semibold"></div>
+          <div class="grid grid-cols-2 gap-3"><select name="day" class="px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm">${DAYS.map(d => `<option>${d}</option>`).join('')}</select><select name="time" class="px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm">${TIME_SLOTS.map(t => `<option>${t}</option>`).join('')}</select></div>
+          <div class="grid grid-cols-2 gap-3"><select name="className" class="px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm">${getClasses(sid).map(c => `<option ${state.filters.scheduleClass === c.name ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}</select><select name="subject" class="px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm">${state.subjects.map(s => `<option>${escapeHtml(s)}</option>`).join('')}</select></div>
+          <select name="teacherId" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm">${getTeachers(sid).map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Ավելացնել</button>
+        </form>
+      `);
+      document.getElementById('add-slot-form').addEventListener('submit', (e) => {
+        e.preventDefault(); const fd = new FormData(e.target);
+        const err = checkScheduleConflict(sid, fd.get('day'), fd.get('time'), fd.get('className'), fd.get('teacherId'));
+        if (err) { const b = document.getElementById('slot-conflict-box'); b.textContent = err; b.classList.remove('hidden'); return showToast('Կոնֆլիկտ դասացուցակում', 'error'); }
+        state.scheduleSlots.push({ id: 'sl-' + Date.now(), schoolId: getCurrentUser().schoolId || 'sch-1', day: fd.get('day'), time: fd.get('time'), className: fd.get('className'), subject: fd.get('subject'), teacherId: fd.get('teacherId'), room: '305' });
+        closeModal(); saveState(); renderApp(); showToast('Դասաժամը ավելացվեց', 'success');
+      });
+    }
+
+    function openResetPassModal(uid) {
+      const u = getUserById(uid); if (!u) return;
+      const gp = generateStrongPassword();
+      openModal(`Նոր գաղտնաբառ՝ @${escapeHtml(u.username)}`, `<form id="reset-pass-form" class="space-y-3"><input name="password" required value="${gp}" class="w-full px-3 py-2 rounded-xl border font-mono text-sm bg-slate-50 dark:bg-slate-800"><button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Հաստատել</button></form>`, 'max-w-sm');
+      document.getElementById('reset-pass-form').addEventListener('submit', (e) => {
+        e.preventDefault(); const np = new FormData(e.target).get('password').trim();
+        u.passwordHash = hashPassword(np, u.salt); u.locked = false; u.failedAttempts = 0; u.mustChangePassword = true;
+        addAuditLog('Գաղտնաբառի վերականգնում', '@' + u.username, 'security');
+        closeModal(); saveState(); renderApp(); showToast('Նոր գաղտնաբառը սահմանվեց', 'security');
+      });
+    }
+
+    function openAiTopicModal() {
+      const sub = state.filters.teacherSubject, cls = state.filters.teacherClass;
+      openModal('AI Թեմայի գեներացիա (Գնահատականներից մեկուսացված)', `<div class="space-y-3"><input id="ai-keyword" placeholder="Թեմայի բանալի բառ (${escapeHtml(sub)})" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"><button type="button" id="btn-run-ai" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Գեներացնել AI-ով</button><div id="ai-preview" class="hidden p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs space-y-2"></div></div>`);
+      document.getElementById('btn-run-ai').addEventListener('click', () => {
+        const kw = document.getElementById('ai-keyword').value.trim();
+        const base = AI_TOPIC_BANK[sub]?.[0];
+        const title = kw ? `${kw} — ${sub}` : (base ? base.title : `${sub} (${cls})`);
+        const plan = base ? base.plan : '1. Ներածություն (8 ր)\n2. Հիմնական նյութ (17 ր)\n3. Գործնական (15 ր)\n4. Ամփոփում (5 ր)';
+        const pv = document.getElementById('ai-preview'); pv.classList.remove('hidden');
+        pv.innerHTML = `<p class="font-bold">${escapeHtml(title)}</p><p class="whitespace-pre-line">${escapeHtml(plan)}</p><button type="button" id="btn-save-ai" class="w-full py-2 rounded-xl bg-emerald-600 text-white font-bold">Հրապարակել</button>`;
+        document.getElementById('btn-save-ai').addEventListener('click', () => {
+          state.topics.unshift({ id: 'top-' + Date.now(), schoolId: getCurrentUser().schoolId, subject: sub, className: cls, teacherId: getCurrentUser().id, title, objectives: ['Յուրացնել թեման'], plan, keyTerms: [sub], date: nowTimestamp().slice(0, 10), hours: 2, aiGenerated: true });
+          addAuditLog('AI թեմայի գեներացիա (առանց գնահատականի մուտքի)', `${cls} · ${sub}`, 'info');
+          closeModal(); saveState(); renderApp(); showToast('Թեման հրապարակվեց', 'success');
+        });
+      });
+    }
+
+    function openAddTopicModal() {
+      openModal('Ավելացնել թեմա', `<form id="add-topic-form" class="space-y-3"><input name="title" required placeholder="Վերնագիր" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"><textarea name="plan" rows="3" required placeholder="Դասի ընթացք" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"></textarea><button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Պահպանել</button></form>`);
+      document.getElementById('add-topic-form').addEventListener('submit', (e) => {
+        e.preventDefault(); const fd = new FormData(e.target);
+        state.topics.unshift({ id: 'top-' + Date.now(), schoolId: getCurrentUser().schoolId, subject: state.filters.teacherSubject, className: state.filters.teacherClass, teacherId: getCurrentUser().id, title: fd.get('title').trim(), objectives: ['Թեմայի յուրացում'], plan: fd.get('plan').trim(), keyTerms: [state.filters.teacherSubject], date: nowTimestamp().slice(0, 10), hours: 1, aiGenerated: false });
+        closeModal(); saveState(); renderApp(); showToast('Թեման պահպանվեց', 'success');
+      });
+    }
+
+    function openAddHomeworkModal() {
+      openModal('Նոր տնային առաջադրանք', `<form id="add-hw-form" class="space-y-3"><input name="title" required placeholder="Վերնագիր" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"><textarea name="description" rows="3" required placeholder="Հրահանգ" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"></textarea><input type="date" name="dueDate" value="2026-11-28" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"><button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Հրապարակել</button></form>`);
+      document.getElementById('add-hw-form').addEventListener('submit', (e) => {
+        e.preventDefault(); const fd = new FormData(e.target);
+        state.homeworks.unshift({ id: 'hw-' + Date.now(), schoolId: getCurrentUser().schoolId, subject: state.filters.teacherSubject, className: state.filters.teacherClass, teacherId: getCurrentUser().id, title: fd.get('title').trim(), description: fd.get('description').trim(), dueDate: fd.get('dueDate'), completedBy: [] });
+        closeModal(); saveState(); renderApp(); showToast('Առաջադրանքը հրապարակվեց', 'success');
+      });
+    }
+
+    function openAddGradeModal(stuId) {
+      const stu = getUserById(stuId); if (!stu) return;
+      if (stu.schoolId !== getCurrentUser()?.schoolId) return showToast('Արգելված է․ չեք կարող գնահատել այլ դպրոցի աշակերտին', 'error');
+      let score = 9;
+      openModal(`Գնահատել՝ ${escapeHtml(stu.name)}`, `<form id="add-grade-form" class="space-y-3"><div class="grid grid-cols-5 gap-2" id="score-picker">${[1,2,3,4,5,6,7,8,9,10].map(n => `<button type="button" data-score="${n}" class="py-2 rounded-xl text-sm font-extrabold border ${n === 9 ? 'brand-gradient text-white border-transparent' : 'bg-slate-50 dark:bg-slate-800'}">${n}</button>`).join('')}</div><input name="comment" placeholder="Մեկնաբանություն" class="w-full px-3 py-2 rounded-xl border bg-slate-50 dark:bg-slate-800 text-sm"><button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold">Հաստատել</button></form>`, 'max-w-md');
+      document.getElementById('score-picker').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-score]'); if (!b) return; score = Number(b.dataset.score);
+        document.querySelectorAll('#score-picker [data-score]').forEach(x => { x.className = `py-2 rounded-xl text-sm font-extrabold border ${Number(x.dataset.score) === score ? 'brand-gradient text-white border-transparent' : 'bg-slate-50 dark:bg-slate-800'}`; });
+      });
+      document.getElementById('add-grade-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.grades.unshift({ id: 'grd-' + Date.now(), studentId: stu.id, subject: state.filters.teacherSubject, score, type: 'Բանավոր', date: nowTimestamp().slice(0, 10), comment: new FormData(e.target).get('comment').trim(), teacherId: getCurrentUser().id });
+        addAuditLog(`Գնահատում (ձեռքով՝ ${score})`, `${stu.name} · ${state.filters.teacherSubject}`, 'success');
+        closeModal(); saveState(); renderApp(); showToast(`${stu.name} գնահատվեց ${score}`, 'success');
+      });
+    }
+
+    function openComposeMsgModal() {
+      openModal('Նոր նամակ գլխավոր օպերատորին', `
+        <form id="compose-msg-form" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Թեմա</label>
+            <input name="subject" required placeholder="օր.՝ Նոր դասարանի կամ ուսուցչի հաստատման հայտ" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Կարևորություն</label>
+            <select name="priority" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+              <option value="normal">Սովորական</option>
+              <option value="urgent">Հրատապ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Նամակի տեքստ</label>
+            <textarea name="body" rows="5" required placeholder="Մանրամասն շարադրեք Ձեր հարցումը կամ առաջարկը..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm"></textarea>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold shadow-md">Ուղարկել գլխավոր օպերատորին</button>
+        </form>
+      `);
+      document.getElementById('compose-msg-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const u = getCurrentUser();
+        const subject = fd.get('subject').trim();
+        state.messages.unshift({
+          id: 'msg-' + Date.now(),
+          fromUserId: u.id,
+          schoolId: u.schoolId,
+          subject,
+          priority: fd.get('priority'),
+          body: fd.get('body').trim(),
+          createdAt: nowTimestamp(),
+          status: 'unread',
+          replyText: '',
+          repliedAt: '',
+          repliedBy: ''
+        });
+        addAuditLog('Նամակ գլխավոր օպերատորին', subject, 'info');
+        closeModal(); saveState(); renderApp();
+        showToast('Նամակը հաջողությամբ ուղարկվեց գլխավոր օպերատորին', 'success');
+      });
+    }
+
+    function openReplyMsgModal(msgId) {
+      const m = (state.messages || []).find(x => x.id === msgId);
+      if (!m) return;
+      openModal(`Պատասխանել՝ ${escapeHtml(m.subject)}`, `
+        <form id="reply-msg-form" class="space-y-3.5">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 text-xs text-slate-600 dark:text-slate-300">${escapeHtml(m.body)}</div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Գլխավոր օպերատորի պատասխանը</label>
+            <textarea name="replyText" rows="4" required placeholder="Գրեք Ձեր պատասխանը դպրոցի օպերատորին..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">${escapeHtml(m.replyText || '')}</textarea>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl brand-gradient text-white text-sm font-bold shadow-md">Ուղարկել պատասխանը</button>
+        </form>
+      `);
+      document.getElementById('reply-msg-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        m.replyText = new FormData(e.target).get('replyText').trim();
+        m.repliedAt = nowTimestamp();
+        m.repliedBy = getCurrentUser().name;
+        m.status = 'replied';
+        addAuditLog('Պատասխան դպրոցի օպերատորի նամակին', m.subject, 'success');
+        closeModal(); saveState(); renderApp();
+        showToast('Պատասխանն ուղարկվեց դպրոցի օպերատորին', 'success');
+      });
+    }
+
+    /* ================= EVENT DELEGATION ================= */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const a = btn.dataset.action;
+
+      if (a === 'close-modal') return closeModal();
+      if (a === 'toggle-theme') { state.darkMode = !state.darkMode; saveState(); return renderApp(); }
+      if (a === 'toggle-login-pass') {
+        const inp = document.getElementById('login-password');
+        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+        return;
+      }
+      if (a === 'delete-grade') {
+        const g = state.grades.find(x => x.id === btn.dataset.id);
+        if (g) {
+          state.grades = state.grades.filter(x => x.id !== g.id);
+          addAuditLog('Գնահատականի հեռացում', `${getUserById(g.studentId)?.name || ''} · ${g.subject} (${g.score})`, 'info');
+          saveState(); renderApp(); showToast('Գնահատականը հեռացվեց', 'info');
+        }
+        return;
+      }
+      if (a === 'toggle-mobile-menu') { state.mobileMenuOpen = !state.mobileMenuOpen; return renderApp(); }
+      if (a === 'logout') {
+        addAuditLog('Դուրս գալ համակարգից', '@' + (getCurrentUser()?.username || ''), 'security');
+        state.isAuthenticated = false; state.currentUserId = null; state.sessionToken = null; state.loginStep = 'credentials'; state.loginError = '';
+        saveState(); return renderApp();
+      }
+      if (a === 'back-to-login') { state.loginStep = 'credentials'; state.loginError = ''; return renderApp(); }
+      if (a === 'fill-login') {
+        const u = document.getElementById('login-username'), p = document.getElementById('login-password');
+        if (u) u.value = btn.dataset.username; if (p) p.value = btn.dataset.pass;
+        return;
+      }
+      if (a === 'switch-tab') { state.activeTabs[getCurrentUser().role] = btn.dataset.tab; state.mobileMenuOpen = false; saveState(); return renderApp(); }
+
+      if (a === 'open-add-school') return openSchoolModal();
+      if (a === 'open-edit-school') return openSchoolModal(btn.dataset.id);
+      if (a === 'open-add-operator') return openOperatorModal();
+      if (a === 'open-edit-operator') return openOperatorModal(btn.dataset.id);
+      if (a === 'open-add-teacher') return openTeacherModal();
+      if (a === 'open-edit-teacher') return openTeacherModal(btn.dataset.id);
+      if (a === 'open-add-student') return openStudentModal();
+      if (a === 'open-edit-student') return openStudentModal(btn.dataset.id);
+      if (a === 'open-add-class') return openAddClassModal();
+      if (a === 'open-add-slot') return openAddSlotModal();
+      if (a === 'open-reset-pass') return openResetPassModal(btn.dataset.id);
+      if (a === 'open-ai-topic') return openAiTopicModal();
+      if (a === 'open-add-topic') return openAddTopicModal();
+      if (a === 'open-add-hw') return openAddHomeworkModal();
+      if (a === 'open-add-grade') return openAddGradeModal(btn.dataset.studentId);
+      if (a === 'open-compose-msg') return openComposeMsgModal();
+      if (a === 'open-reply-msg') return openReplyMsgModal(btn.dataset.id);
+      if (a === 'mark-msg-read') {
+        const m = (state.messages || []).find(x => x.id === btn.dataset.id);
+        if (m) { m.status = 'read'; saveState(); renderApp(); showToast('Նշվեց որպես կարդացված', 'info'); }
+        return;
+      }
+      if (a === 'delete-msg') {
+        state.messages = (state.messages || []).filter(x => x.id !== btn.dataset.id);
+        saveState(); renderApp(); showToast('Նամակը հեռացվեց', 'info');
+        return;
+      }
+
+      if (a === 'cycle-attendance') {
+        const stuId = btn.dataset.studentId, date = btn.dataset.date;
+        const stuObj = getUserById(stuId);
+        if (!stuObj || stuObj.schoolId !== getCurrentUser()?.schoolId) return showToast('Արգելված է․ աշակերտը այլ դպրոցից է', 'error');
+        const order = ['Ն', 'Բ', 'Հ', 'Ու'];
+        const rec = getAttendanceForDate(stuId, date);
+        if (!rec) {
+          state.attendanceRecords.push({ id: 'att-' + Date.now(), studentId: stuId, date, status: 'Ն', subject: state.filters.teacherSubject, note: '' });
+        } else {
+          const next = order[(order.indexOf(rec.status) + 1) % order.length];
+          rec.status = next;
+          rec.subject = state.filters.teacherSubject;
+          rec.note = next === 'Բ' ? 'Անհարգելի բացակա' : next === 'Հ' ? 'Հարգելի բացակա' : next === 'Ու' ? 'Ուշացում' : '';
+        }
+        saveState(); renderApp(); return;
+      }
+
+      if (a === 'delete-school') { state.schools = state.schools.filter(s => s.id !== btn.dataset.id); saveState(); return renderApp(); }
+      if (a === 'delete-operator' || a === 'delete-user') {
+        const u = getUserById(btn.dataset.id);
+        if (u && !u.protected) { state.users = state.users.filter(x => x.id !== u.id); addAuditLog('Օգտատիրոջ հեռացում', '@' + u.username, 'security'); saveState(); renderApp(); }
+        return;
+      }
+      if (a === 'toggle-user-lock') {
+        const u = getUserById(btn.dataset.id);
+        if (u && !u.protected) { u.locked = !u.locked; u.failedAttempts = 0; addAuditLog(u.locked ? 'Կողպում' : 'Ապակողպում', '@' + u.username, 'security'); saveState(); renderApp(); }
+        return;
+      }
+      if (a === 'toggle-user-2fa') { const u = getUserById(btn.dataset.id); if (u) { u.twoFA = !u.twoFA; saveState(); renderApp(); } return; }
+      if (a === 'delete-subject') { state.subjects = state.subjects.filter(s => s !== btn.dataset.name); saveState(); return renderApp(); }
+      if (a === 'delete-class') { state.classes = state.classes.filter(c => c.id !== btn.dataset.id); saveState(); return renderApp(); }
+      if (a === 'delete-slot') { state.scheduleSlots = state.scheduleSlots.filter(s => s.id !== btn.dataset.id); saveState(); return renderApp(); }
+      if (a === 'delete-topic') { state.topics = state.topics.filter(t => t.id !== btn.dataset.id); saveState(); return renderApp(); }
+      if (a === 'delete-hw') { state.homeworks = state.homeworks.filter(h => h.id !== btn.dataset.id); saveState(); return renderApp(); }
+      if (a === 'toggle-policy') { state.securityPolicies[btn.dataset.key] = !state.securityPolicies[btn.dataset.key]; saveState(); return renderApp(); }
+      if (a === 'export-db') {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'daran-database-sync.json'; link.click(); URL.revokeObjectURL(url);
+        return showToast('Ամբողջական տվյալների բազան արտահանվեց', 'success');
+      }
+      if (a === 'reset-demo') { state = getDefaultState(); saveState(); renderApp(); return showToast('Տվյալները վերականգնվեցին', 'info'); }
+      if (a === 'toggle-student-hw') {
+        const hw = state.homeworks.find(h => h.id === btn.dataset.id);
+        const uid = getCurrentUser().id;
+        if (hw) { const i = hw.completedBy.indexOf(uid); if (i >= 0) hw.completedBy.splice(i, 1); else hw.completedBy.push(uid); saveState(); renderApp(); }
+      }
+    });
+
+    document.addEventListener('input', (e) => {
+      const f = e.target.dataset.filter;
+      if (f && e.target.tagName === 'INPUT' && e.target.type !== 'date') {
+        state.filters[f] = e.target.value;
+        const pos = e.target.selectionStart;
+        renderApp();
+        const next = document.querySelector(`[data-filter="${f}"]`);
+        if (next) { next.focus(); try { next.setSelectionRange(pos, pos); } catch (err) {} }
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      const f = e.target.dataset.filter;
+      if (f) { state.filters[f] = e.target.value; saveState(); return renderApp(); }
+      if (e.target.dataset.policySelect) { state.securityPolicies[e.target.dataset.policySelect] = Number(e.target.value); saveState(); showToast('Պահպանվեց', 'security'); }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => renderApp());
+  </script>
+</body>
+</html>
